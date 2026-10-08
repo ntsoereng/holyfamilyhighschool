@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}{{ member.display_name }} · Our staff · {{ school.name }}{% endblock %}
+{% block description %}{{ member.biography|truncatewords:30|default:school.staff_intro }}{% endblock %}
+{% block content %}
+{% include 'components/page_header.html' with eyebrow='GET TO KNOW OUR TEAM' title=member.display_name introduction=member.position image=school.staff_image image_alt=school.staff_image_alt %}
+
+<section class="hf-soft-section">
+  <div class="container section">
+    <a class="text-link hf-staff-back" href="{% url 'school-staff' %}">All departments {% include 'components/icon.html' with name='chevron' %}</a>
+    <article class="hf-card hf-profile-layout">
+      <div class="hf-profile-media">
+        {% if member.image %}<img src="{{ member.image.url }}" alt="{{ member.image_alt|default:member.display_name }}" width="640" height="800" decoding="async">
+        {% else %}<div class="staff-portrait-placeholder" aria-hidden="true">{{ member.title|slice:':1' }}</div>{% endif %}
+      </div>
+      <div class="hf-profile-content">
+        <p class="eyebrow">AT HOLY FAMILY</p>
+        <h2>{{ member.display_name }}</h2>
+        {% if member.position %}<p class="staff-position">{{ member.position }}</p>{% endif %}
+        {% if member.date_from %}<p class="hf-profile-meta">At Holy Family from <time datetime="{{ member.date_from|date:'Y-m-d' }}">{{ member.date_from|date:'j F Y' }}</time></p>{% endif %}
+        {% if departments %}<div class="hf-profile-departments" aria-label="Departments">{% for department in departments %}<a href="{% url 'school-department' department.pk %}">{{ department.title }}</a>{% endfor %}</div>{% endif %}
+        {% if member.biography %}<div class="prose staff-biography">{{ member.biography|linebreaks }}</div>{% else %}<p>A biography hasn’t been shared yet. Contact the school office if you’d like to reach this member of our team.</p>{% endif %}
+      </div>
+    </article>
+    <div class="hf-staff-page-links"><a class="button" href="{% url 'curriculum' %}">Explore your subjects {% include 'components/icon.html' with name='book' %}</a><a class="button button-outline" href="{% url 'contact' %}">Contact the school</a></div>
+  </div>
+</section>
+{% endblock %}

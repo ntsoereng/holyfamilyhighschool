@@ -1,0 +1,10 @@
+{% for field in form %}
+{% if field.is_hidden %}{{ field }}
+{% elif field.name == 'departments' %}
+<fieldset class="form-field department-checkboxes"><legend>{{ field.label }}</legend>{{ field }}{% if field.help_text %}<p class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}{{ field.errors }}</fieldset>
+{% else %}
+<div class="form-field {% if field.field.widget.input_type == 'checkbox' %}staff-checkbox{% endif %}">
+{% if field.field.widget.input_type == 'checkbox' %}{{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+{% else %}<label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span>(optional)</span>{% endif %}</label>{{ field }}{% if field.field.widget.input_type == 'file' and field.value %}<img class="staff-image-preview" src="{{ field.value.url }}" alt="Current {{ field.label|lower }}" loading="lazy">{% endif %}{% endif %}
+{% if field.help_text %}<div class="field-help" {% if field.auto_id %}id="{{ field.auto_id }}_helptext"{% endif %}>{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}</div>
+{% endif %}{% endfor %}

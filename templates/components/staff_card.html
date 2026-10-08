@@ -1,0 +1,14 @@
+<article class="staff-profile-card hf-card">
+  <a class="hf-staff-card-link" href="{% url 'school-staff-profile' member.pk %}">
+    <div class="hf-staff-media">
+      {% if member.image %}<img class="staff-portrait" src="{{ member.image.url }}" alt="{{ member.image_alt|default:member.display_name }}" loading="lazy" decoding="async" width="640" height="480">
+      {% else %}<div class="staff-portrait-placeholder" aria-hidden="true">{{ member.title|slice:':1' }}</div>{% endif %}
+    </div>
+    <div class="hf-staff-content">
+      <h3>{{ member.display_name }}</h3>
+      {% if member.position %}<p class="staff-position">{{ member.position }}</p>{% endif %}
+      {% if member.biography %}<p class="staff-biography">{{ member.biography|truncatewords:24 }}</p>{% endif %}
+      <span class="text-link">View profile {% include 'components/icon.html' with name='chevron' %}</span>
+    </div>
+  </a>
+</article>

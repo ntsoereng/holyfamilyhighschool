@@ -1,0 +1,19 @@
+{% if field.field.widget.input_type == 'radio' %}
+<fieldset class="form-field choice-fieldset{% if wide %} hf-field-wide{% endif %}"{% if field.aria_describedby %} aria-describedby="{{ field.aria_describedby }}"{% endif %}>
+  <legend>{{ field.label }}{% if field.field.required %} <span class="required-mark" aria-hidden="true">*</span>{% endif %}</legend>
+  {{ field }}
+  {% if field.help_text %}<p class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+  {{ field.errors }}
+</fieldset>
+{% else %}
+<div class="form-field{% if field.name == 'consent' %} consent-field{% endif %}{% if wide %} hf-field-wide{% endif %}">
+  {% if field.name == 'consent' %}
+  {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }} <span class="required-mark" aria-hidden="true">*</span></label>
+  {% else %}
+  <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required-mark" aria-hidden="true">*</span>{% elif field.name == 'district_other' %} <span>(if Other)</span>{% else %} <span>(optional)</span>{% endif %}</label>
+  {{ field }}
+  {% endif %}
+  {% if field.help_text %}<p class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+  {{ field.errors }}
+</div>
+{% endif %}

@@ -1,0 +1,15 @@
+<div class="event-list">
+  {% for event in events %}
+  <a class="event-row hf-card" href="{% url 'event' event.slug %}">
+    <time class="event-date" datetime="{{ event.starts_at|date:'c' }}"><strong>{{ event.starts_at|date:'d' }}</strong><span>{{ event.starts_at|date:'M' }}</span></time>
+    {% if event.image %}<img class="event-thumbnail" src="{{ event.image.url }}" alt="" loading="lazy" decoding="async">{% endif %}
+    <div class="hf-event-copy">
+      <h3>{{ event.title }}</h3>
+      <p class="hf-event-meta"><span>{% include 'components/icon.html' with name='clock' %}{{ event.starts_at|date:'l, j F Y' }} · {{ event.starts_at|date:'H:i' }}{% if event.ends_at %} – {{ event.ends_at|date:'j M, H:i' }}{% endif %}</span>{% if event.location %}<span>{% include 'components/icon.html' with name='pin' %}{{ event.location }}</span>{% endif %}</p>
+    </div>
+    <span class="hf-event-link">View details {% include 'components/icon.html' with name='chevron' %}</span>
+  </a>
+  {% empty %}
+  <div class="empty-state hf-card"><span class="icon-tile">{% include 'components/icon.html' with name='calendar' %}</span><h3>No upcoming events yet</h3><p>New dates will be shared here as the school calendar is confirmed.</p></div>
+  {% endfor %}
+</div>

@@ -1,0 +1,11 @@
+<section class="calendar-agenda" aria-labelledby="calendar-agenda-heading">
+  <h3 id="calendar-agenda-heading">Events in {{ month_label }}</h3>
+  <ol class="calendar-agenda-list">
+    {% for day in month_agenda %}
+    <li class="calendar-agenda-day{% if day.is_today %} is-today{% endif %}">
+      <time class="calendar-agenda-date" datetime="{{ day.date|date:'Y-m-d' }}"{% if day.is_today %} aria-current="date"{% endif %}>{{ day.date|date:'l, j F' }}</time>
+      <div>{% for entry in day.entries %}{% include 'components/calendar_entry.html' with entry_date=day.date %}{% endfor %}</div>
+    </li>
+    {% empty %}<li class="calendar-empty">No published events this month. Use the month controls to explore other dates.</li>{% endfor %}
+  </ol>
+</section>

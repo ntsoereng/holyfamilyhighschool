@@ -1,0 +1,52 @@
+{% extends 'base.html' %}{% load tz %}
+{% block title %}Calendar · {{ school.name }}{% endblock %}
+{% block description %}{{ school.calendar_intro }}{% endblock %}
+{% block content %}
+{% include 'components/page_header.html' with eyebrow='SCHOOL CALENDAR' breadcrumb='Calendar' title=school.calendar_heading introduction=school.calendar_intro image=school.calendar_image image_alt=school.calendar_image_alt %}
+
+{% timezone calendar_timezone %}
+<section class="hf-soft-section">
+  <div class="container section calendar-page">
+    <div class="calendar-intro">
+      <div><p class="eyebrow">SCHOOL DATES</p><h2>Plan your school month</h2><p>Browse events, gatherings and important dates for our school community.</p></div>
+      <a class="text-link" href="{% url 'contact' %}">Ask about an event {% include 'components/icon.html' with name='chevron' %}</a>
+    </div>
+    <div class="calendar-layout">
+      <section class="calendar-board hf-card" aria-labelledby="calendar-month-heading">
+        <header class="calendar-toolbar">
+          <div><p class="eyebrow">MONTHLY VIEW</p><h2 class="calendar-month-label" id="calendar-month-heading">{{ month_label }}</h2></div>
+          <nav class="calendar-controls" aria-label="Calendar month navigation">
+            {% if previous_month %}<a class="calendar-control" href="?year={{ previous_month.year }}&amp;month={{ previous_month.month }}" aria-label="Previous month, {{ previous_month|date:'F Y' }}"><span aria-hidden="true">←</span><span>Previous</span></a>{% else %}<span class="calendar-control is-disabled" aria-disabled="true">Previous</span>{% endif %}
+            <a class="calendar-control calendar-today-link" href="?year={{ today_year }}&amp;month={{ today_month }}">Today</a>
+            {% if next_month %}<a class="calendar-control" href="?year={{ next_month.year }}&amp;month={{ next_month.month }}" aria-label="Next month, {{ next_month|date:'F Y' }}"><span>Next</span><span aria-hidden="true">→</span></a>{% else %}<span class="calendar-control is-disabled" aria-disabled="true">Next</span>{% endif %}
+          </nav>
+        </header>
+        <p class="calendar-scroll-hint" id="calendar-scroll-help">Scroll across the monthly view on smaller screens, or use the dated event list below.</p>
+        <div class="calendar-scroll" role="region" aria-labelledby="calendar-month-heading" aria-describedby="calendar-scroll-help" tabindex="0">
+          <table class="calendar-grid">
+            <caption class="sr-only">{{ month_label }} school events, Monday to Sunday</caption>
+            <thead class="calendar-weekdays"><tr>{% for weekday in calendar_weekdays %}<th scope="col"><abbr title="{{ weekday.full }}">{{ weekday.short }}</abbr></th>{% endfor %}</tr></thead>
+            <tbody>
+              {% for week in calendar_weeks %}<tr>
+                {% for day in week %}<td class="calendar-day{% if not day.is_current_month %} is-outside-month{% endif %}{% if day.is_today %} is-today{% endif %}" aria-label="{{ day.date|date:'l, j F Y' }}">
+                  <time class="calendar-day-number" datetime="{{ day.date|date:'Y-m-d' }}"{% if day.is_today %} aria-current="date"{% endif %}>{{ day.date.day }}{% if not day.is_current_month %}<span class="calendar-day-month"> {{ day.date|date:'M' }}</span>{% endif %}</time>
+                  <div class="calendar-day-events">{% for entry in day.entries %}{% include 'components/calendar_entry.html' with entry_date=day.date %}{% endfor %}</div>
+                </td>{% endfor %}
+              </tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if not has_month_events %}<p class="calendar-empty" role="status">No published events in {{ month_label }}. Use the month controls to explore other dates.</p>{% endif %}
+        {% include 'components/calendar_agenda.html' %}
+      </section>
+      <aside class="calendar-upcoming" aria-labelledby="calendar-upcoming-heading">
+        <div class="section-heading"><div><p class="eyebrow">LOOKING AHEAD</p><h2 id="calendar-upcoming-heading">Next school dates</h2></div></div>
+        {% include 'school/event_list.html' with events=upcoming_events %}
+        <div class="calendar-help hf-card"><span class="icon-tile">{% include 'components/icon.html' with name='mail' %}</span><h3>Need to check a date?</h3><p>Contact the school office before arranging a visit or making plans.</p><a class="text-link" href="{% url 'contact' %}">Contact the school {% include 'components/icon.html' with name='chevron' %}</a></div>
+      </aside>
+    </div>
+    <div class="calendar-note"><span class="icon-tile">{% include 'components/icon.html' with name='calendar' %}</span><p>All dates and times use the school’s local time zone. Published dates may change; please confirm arrangements with the school office.</p></div>
+  </div>
+</section>
+{% endtimezone %}
+{% endblock %}

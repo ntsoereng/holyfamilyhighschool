@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# School site local data and builds
+.env
+.env.*
+!.env.example
+*.sqlite3
+media/
+staticfiles/
+node_modules/
+.django-cache/
+
+!.env.production.example

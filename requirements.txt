@@ -1,0 +1,11 @@
+asgiref==3.12.1
+Django==5.2.17
+django-axes==8.3.1
+django-tinymce==5.0.0
+gunicorn==26.2.0
+nh3==0.3.7
+pillow==12.3.0
+python-decouple==3.8
+PyMySQL[rsa]==1.1.2
+sqlparse==0.6.0
+whitenoise==6.12.0

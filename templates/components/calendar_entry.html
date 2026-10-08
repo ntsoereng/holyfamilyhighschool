@@ -1,0 +1,4 @@
+<a class="calendar-entry" href="{% url 'event' entry.event.slug %}" aria-label="{{ entry.event.title }}, {{ entry_date|date:'j F Y' }}{% if entry.is_first_day %}, starts at {{ entry.start_local|date:'H:i' }}{% else %}, continuing event{% endif %}">
+  {% if entry.is_first_day %}<time class="calendar-entry-time" datetime="{{ entry.start_local|date:'c' }}">{{ entry.start_local|date:'H:i' }}</time>{% else %}<span class="calendar-entry-time">Continues</span>{% endif %}
+  <span class="calendar-entry-title">{{ entry.event.title }}</span>
+</a>

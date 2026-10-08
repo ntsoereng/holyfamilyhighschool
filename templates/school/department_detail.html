@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}{{ department.title }} · Our staff · {{ school.name }}{% endblock %}
+{% block description %}{{ department.description|default:school.staff_intro }}{% endblock %}
+{% block content %}
+{% include 'components/page_header.html' with eyebrow='MEET THE DEPARTMENT' title=department.title introduction=department.description image=school.staff_image image_alt=school.staff_image_alt %}
+
+<section class="hf-soft-section">
+  <div class="container section directory-page">
+    <a class="text-link hf-staff-back" href="{% url 'school-staff' %}">All departments {% include 'components/icon.html' with name='chevron' %}</a>
+    <div class="section-heading"><div><p class="eyebrow">YOUR SCHOOL TEAM</p><h2>People in {{ department.title }}</h2><p>Select a profile to get to know a member of the team.</p></div></div>
+    <div class="staff-profile-grid">
+      {% for member in members %}{% include 'components/staff_card.html' %}
+      {% empty %}<div class="empty-state hf-card hf-department-empty"><span class="icon-tile">{% include 'components/icon.html' with name='people' %}</span><h3>More about our team, soon.</h3><p>Profiles for this department haven’t been shared yet. The school office can help you reach the right person.</p><a class="text-link" href="{% url 'contact' %}">Contact the school</a></div>{% endfor %}
+    </div>
+    <div class="hf-staff-page-links"><a class="button" href="{% url 'curriculum' %}">Explore your subjects {% include 'components/icon.html' with name='book' %}</a><a class="button button-outline" href="{% url 'contact' %}">Contact the school</a></div>
+  </div>
+</section>
+{% endblock %}

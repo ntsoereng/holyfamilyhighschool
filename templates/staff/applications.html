@@ -1,0 +1,11 @@
+{% extends 'staff/base.html' %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+<div class="workspace-heading"><div><p class="eyebrow">ADMISSIONS</p><h1>Applications</h1><p>A private inbox for your admissions team.</p></div></div>
+<form method="get" class="staff-filters"><div><label for="q">Learner, guardian, contact or reference</label><input id="q" name="q" value="{{ query }}" type="search"></div><div><label for="state">Review status</label><select id="state" name="state"><option value="">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}" {% if state == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><button class="button" type="submit">Filter</button><a class="text-link" href="{% url 'staff-applications' %}">Reset</a></form>
+<div class="staff-panel table-scroll"><table class="staff-table"><thead><tr><th scope="col">Learner</th><th scope="col">Entry</th><th scope="col">District</th><th scope="col">Boarding</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody>
+{% for item in items %}<tr><td><strong>{{ item.learner_name }}</strong><small>{{ item.guardian_name }}</small></td><td>{{ item.entry_level }}{% if item.application_year %}<small>{{ item.application_year }}</small>{% endif %}</td><td>{{ item.district_display|default:'Not provided' }}</td><td>{{ item.boarding_required|yesno:'Yes,No,Not provided' }}</td><td>{{ item.submitted_at|date:'d M Y' }}</td><td>{{ item.get_status_display }}</td><td><a class="text-link" href="{% url 'staff-application' item.pk %}" aria-label="Review application for {{ item.learner_name }}">Review</a></td></tr>
+{% empty %}<tr><td colspan="7">No applications match your filters.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include 'staff/pagination.html' %}
+{% endblock %}

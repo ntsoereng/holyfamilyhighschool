@@ -1,0 +1,32 @@
+{% extends 'staff/base.html' %}
+{% block title %}Application review{% endblock %}
+{% block content %}
+<a class="text-link workspace-back" href="{% url 'staff-applications' %}">Admissions inbox</a>
+<div class="workspace-heading"><div><p class="eyebrow">APPLICATION REVIEW</p><h1>{{ record.learner_name }}</h1><p>{{ record.entry_level }}{% if record.application_year %} · {{ record.application_year }}{% endif %} / Received {{ record.submitted_at|date:'d F Y, H:i' }}</p></div></div>
+<div class="application-review">
+  <section class="staff-panel">
+    <h2>Application details</h2>
+    <dl class="detail-list">
+      <dt>Reference</dt><dd>{{ record.reference }}</dd>
+      {% if record.surname %}<dt>Surname</dt><dd>{{ record.surname }}</dd>{% endif %}
+      {% if record.given_name %}<dt>Name</dt><dd>{{ record.given_name }}</dd>{% endif %}
+      <dt>Date of birth</dt><dd>{{ record.date_of_birth|date:'d F Y' }}</dd>
+      <dt>Physical address</dt><dd>{{ record.physical_address|default:'Not provided'|linebreaksbr }}</dd>
+      <dt>District</dt><dd>{{ record.district_display|default:'Not provided' }}</dd>
+      <dt>Primary school</dt><dd>{{ record.current_school|default:'Not provided' }}</dd>
+      <dt>Applying for boarding</dt><dd>{{ record.boarding_required|yesno:'Yes,No,Not provided' }}</dd>
+      <dt>Name of Parent/Guardian</dt><dd>{{ record.guardian_name }}</dd>
+      <dt>Contacts of Parent/Guardian</dt><dd><a href="tel:{{ record.phone }}">{{ record.phone }}</a></dd>
+      {% if record.email %}<dt>Email (previous form)</dt><dd><a href="mailto:{{ record.email }}">{{ record.email }}</a></dd>{% endif %}
+      {% if record.message %}<dt>Message (previous form)</dt><dd>{{ record.message|linebreaksbr }}</dd>{% endif %}
+      <dt>Guardian consent</dt><dd>{{ record.consent|yesno:'Provided,Not provided' }}</dd>
+    </dl>
+  </section>
+  <section class="staff-panel">
+    <h2>Staff review</h2>
+    {% if can_change %}<form method="post" class="staff-form">{% csrf_token %}{{ form.non_field_errors }}{% include 'staff/fields.html' %}<button class="button" type="submit">Save review</button></form>
+    {% else %}<p>Status: {{ record.get_status_display }}</p><p>{{ record.staff_notes|default:'No notes yet.'|linebreaksbr }}</p>{% endif %}
+    {% if can_delete %}<a class="danger-link review-delete" href="{% url 'staff-application-delete' record.pk %}">Delete application</a>{% endif %}
+  </section>
+</div>
+{% endblock %}

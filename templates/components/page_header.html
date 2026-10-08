@@ -1,0 +1,4 @@
+<section class="page-banner{% if image %} has-header-image{% endif %}">
+  {% if image %}<img class="page-header-image" src="{{ image.url }}" alt="{{ image_alt }}" fetchpriority="high">{% endif %}
+  <div class="container banner-content"><div class="page-banner-copy"><p class="eyebrow">{{ eyebrow }}</p><h1>{{ title }}</h1>{% if introduction %}<p class="lead">{{ introduction }}</p>{% endif %}</div></div>
+</section>

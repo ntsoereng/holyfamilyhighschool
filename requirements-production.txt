@@ -1,0 +1,2 @@
+# cPanel/Passenger with MySQL/MariaDB via PyMySQL
+-r requirements.txt

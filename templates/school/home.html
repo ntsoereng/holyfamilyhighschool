@@ -1,0 +1,32 @@
+{% extends 'base.html' %}{% load static %}{% block body_class %}home-page{% endblock %}
+{% block extra_head %}{% if school.hero_image %}<link rel="preload" as="image" href="{{ school.hero_image.url }}">{% endif %}{% endblock %}
+{% block content %}
+<section class="home-hero{% if school.hero_image %} has-photo{% endif %}">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="hero-introduction">{{ school.hero_eyebrow }}</p>
+      <h1>{{ school.hero_title }}</h1>
+      <p class="hero-description">{{ school.hero_text }}</p>
+      <div class="hero-actions"><a class="button" href="{% url 'apply' %}">{% if school.admissions_open %}Start your application{% else %}Admissions information{% endif %}<span aria-hidden="true">→</span></a><a class="hero-story-link" href="{% url 'about' %}">Get to know Holy Family <span aria-hidden="true">→</span></a></div>
+      <p class="hero-invitation">Your curiosity. Your character. Your next chapter.</p>
+    </div>
+    <figure class="hero-media">
+      {% if school.hero_image %}<img class="home-hero-photo" src="{{ school.hero_image.url }}" alt="{{ school.hero_image_alt }}" fetchpriority="high" width="640" height="760">{% else %}<div class="feature-center">{% if school.logo %}<img src="{{ school.logo.url }}" alt="{{ school.name }} crest">{% else %}<img src="{% static 'images/holy-family-original.png' %}" alt="{{ school.name }} crest">{% endif %}<p>{{ school.name }}</p><span>{{ school.motto }}</span></div>{% endif %}
+      {% if school.hero_image and school.motto %}<figcaption class="hero-image-note"><span aria-hidden="true">—</span> {{ school.motto }}</figcaption>{% endif %}
+    </figure>
+  </div>
+</section>
+<section class="container section common-paths" aria-labelledby="common-paths-heading">
+  <div class="section-heading"><div><p class="eyebrow">A place to begin</p><h2 id="common-paths-heading">What would you like to explore?</h2><p>Find your next step, or keep in touch with school life.</p></div></div>
+  <nav class="quicklinks" aria-label="School quick links">
+    <a class="quicklink-primary" href="{% url 'apply' %}"><span class="quicklink-number" aria-hidden="true">01</span><strong>Your application</strong><p>Take your first step towards joining Holy Family.</p><span class="text-link">{% if school.admissions_open %}Explore admissions{% else %}Admissions information{% endif %} <span aria-hidden="true">→</span></span></a>
+    <a href="{% url 'curriculum' %}"><span class="quicklink-number" aria-hidden="true">02</span><strong>Your learning</strong><p>Discover the subjects and possibilities ahead of you.</p><span class="text-link">Explore your subjects <span aria-hidden="true">→</span></span></a>
+    <a href="{% url 'events' %}"><span class="quicklink-number" aria-hidden="true">03</span><strong>School calendar</strong><p>Find events and important dates in our community.</p><span class="text-link">View the calendar <span aria-hidden="true">→</span></span></a>
+    <a href="{% url 'contact' %}"><span class="quicklink-number" aria-hidden="true">04</span><strong>Let’s connect</strong><p>Ask a question, share an enquiry or arrange a visit.</p><span class="text-link">Contact the office <span aria-hidden="true">→</span></span></a>
+  </nav>
+</section>
+<section class="hf-soft-section" id="welcome"><div class="container section welcome-grid"><div class="welcome-copy"><p class="eyebrow">Welcome to Holy Family</p><h2>{{ school.about_title }}</h2><p class="lead">{{ school.about_text }}</p><a class="text-link" href="{% url 'about' %}">Discover our story <span aria-hidden="true">→</span></a></div><div class="welcome-visual">{% if school.about_image %}<img class="welcome-image" src="{{ school.about_image.url }}" alt="{{ school.about_image_alt }}" loading="lazy" width="600" height="400">{% else %}<div class="hf-card welcome-mission"><span class="icon-tile">{% include 'components/icon.html' with name='shield' %}</span><p class="eyebrow">Our purpose</p><h3>An education for the whole person.</h3><p>{% if school.about_mission %}{{ school.about_mission }}{% else %}{{ school.about_text }}{% endif %}</p><a class="text-link" href="{% url 'about' %}#purpose">Our mission & vision <span aria-hidden="true">→</span></a></div>{% endif %}</div></div></section>
+{% if statistics %}<div class="container section statistics-home">{% include 'components/statistics.html' %}</div>{% endif %}
+{% if values %}<section class="container section values-home"><div class="section-heading hf-centered"><div><p class="eyebrow">What shapes our school</p><h2>Rooted in what matters.</h2><p>Values that guide our learning and the way we care for one another.</p></div></div><div class="values-grid">{% for value in values %}<article class="value-card hf-card"><span class="icon-tile">{% cycle 'shield' 'book' 'people' as value_icon silent %}{% include 'components/icon.html' with name=value_icon %}</span><h3>{{ value.title }}</h3><p>{{ value.description }}</p></article>{% endfor %}</div></section>{% endif %}
+<section class="hf-soft-section"><div class="container section home-updates"><div class="home-stories"><div class="section-heading"><div><p class="eyebrow">School news</p><h2>Latest stories</h2></div><a class="text-link" href="{% url 'news' %}">All news <span aria-hidden="true">→</span></a></div><div class="news-grid">{% for item in articles %}{% include 'school/article_card.html' %}{% empty %}<div class="hf-card empty-state"><h3>School stories, shared here.</h3><p>News and updates will appear as they are published.</p></div>{% endfor %}</div></div><div class="home-dates"><div class="section-heading"><div><p class="eyebrow">Plan ahead</p><h2>Upcoming dates</h2></div><a class="text-link" href="{% url 'events' %}">Full calendar <span aria-hidden="true">→</span></a></div>{% include 'school/event_list.html' %}</div></div></section>
+{% endblock %}
