@@ -14,7 +14,7 @@ from django.utils.html import strip_tags
 from .models import Article, Department, Event, SiteSettings, StaffMember, Subject, SchoolLifePost
 
 
-PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy', 'terms')
+PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy', 'terms', 'donation')
 PUBLIC_DETAIL_PAGES = ('article', 'event', 'subject', 'school-department', 'school-staff-profile', 'school-life-post')
 LEGACY_PAGES = {'about': 'about', 'about-us': 'about', 'curriculum': 'curriculum',
                 'our-staff': 'school-staff', 'staff': 'school-staff'}
@@ -88,6 +88,7 @@ def metadata(request):
         'news': (f'News · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
         'application-success': (f'Application received · {school.name}', 'Your application has been received. Keep your private reference for follow-up with the school office.', None, ''),
         'privacy': (f'Privacy Policy · {school.name}', f'How {school.name} uses personal information, protects learner data and handles cookies under Lesotho’s data protection law.', None, ''),
+        'donation': (f'Donation · {school.name}', f'Support {school.name} through monetary or in-kind donations. Contact the school to discuss current needs and arrange your contribution.', None, ''),
         'terms': (f'Terms of Use · {school.name}', f'Terms for using the {school.name} website, submitting applications and enquiries, and sharing school and student content.', None, ''),
     }
     fallbacks = {
@@ -167,7 +168,7 @@ def metadata(request):
 
     parent = {'article': 'news', 'school-life-post': 'school-life', 'subject': 'curriculum',
               'school-department': 'school-staff', 'school-staff-profile': 'school-staff', 'event': 'events'}.get(route, route)
-    section = 'school' if parent in {'about', 'curriculum', 'school-staff'} else 'community' if parent in {'news', 'school-life'} else parent
+    section = 'school' if parent in {'about', 'curriculum', 'school-staff'} else 'community' if parent in {'news', 'school-life', 'donation'} else parent
     return {'seo': {
         'parent': parent, 'section': section,
         'title': title,

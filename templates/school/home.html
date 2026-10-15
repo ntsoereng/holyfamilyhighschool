@@ -7,7 +7,7 @@
       <p class="hero-introduction">{{ school.hero_eyebrow }}</p>
       <h1>{{ school.hero_title }}</h1>
       <p class="hero-description">{{ school.hero_text }}</p>
-      <div class="hero-actions"><a class="button" href="{% url 'apply' %}">{% if school.admissions_open %}Start your application{% else %}Admissions information{% endif %}<span aria-hidden="true">→</span></a><a class="hero-story-link" href="{% url 'about' %}">Get to know Holy Family <span aria-hidden="true">→</span></a></div>
+      <div class="hero-actions">{% include 'components/admissions_action.html' with action_label='Start your application' %}<a class="hero-story-link" href="{% url 'about' %}">Get to know Holy Family <span aria-hidden="true">→</span></a></div>
     </div>
     <figure class="hero-media">
       {% if school.hero_image %}<img class="home-hero-photo" src="{{ school.hero_image.url }}" alt="{{ school.hero_image_alt }}" fetchpriority="high" width="640" height="760">{% else %}<div class="feature-center">{% if school.logo %}<img src="{{ school.logo.url }}" alt="{{ school.name }} crest">{% else %}<img src="{% static 'images/holy-family-original.png' %}" alt="{{ school.name }} crest">{% endif %}<p>{{ school.name }}</p></div>{% endif %}

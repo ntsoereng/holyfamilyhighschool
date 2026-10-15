@@ -28,7 +28,7 @@ class HomepageTests(TestCase):
         self.site.admissions_open = False
         self.site.save()
         response = self.client.get('/')
-        self.assertContains(response, 'Admissions information')
+        self.assertContains(response, 'Contact us')
         self.assertNotContains(response, 'Apply now')
         self.assertNotContains(response, 'Start your application')
         self.assertNotContains(response, 'Apply to Holy Family')
@@ -52,3 +52,29 @@ class HomepageTests(TestCase):
         self.assertNotContains(response, 'Our school community')
         self.assertLess(response.content.index(b'Upcoming dates'), response.content.index(b'Latest news'))
         self.assertNotContains(response, 'hero-invitation')
+
+    def test_closed_admissions_replace_prominent_links_with_phone_action(self):
+        self.site.admissions_open = False
+        self.site.phone = '+266 2222 3333'
+        self.site.save()
+        response = self.client.get('/')
+        self.assertContains(response, 'href="tel:+266 2222 3333"')
+        self.assertContains(response, 'Call us', count=2)
+        self.assertNotContains(response, 'Start your application')
+        self.assertNotContains(response, '>Admissions <span')
+
+    def test_donation_page_uses_school_contact_settings(self):
+        self.site.phone = '+266 2222 3333'
+        self.site.email = 'office@example.com'
+        self.site.save()
+        response = self.client.get('/donation/')
+        for text in ['Monetary donations', 'In-kind donations', 'How to donate',
+                     'tel:+266 2222 3333', 'mailto:office@example.com?subject=Donation%20enquiry']:
+            self.assertContains(response, text)
+        self.assertContains(response, '/donation/')
+        self.site.phone = self.site.email = ''
+        self.site.save()
+        response = self.client.get('/donation/')
+        self.assertContains(response, 'Contact the school office')
+        self.assertNotContains(response, 'href="tel:')
+        self.assertNotContains(response, 'href="mailto:')
