@@ -22,10 +22,10 @@ class StaffRoleGuideTests(TestCase):
         editor = Group.objects.get(name='Content editors')
         office = Group.objects.get(name='Admissions officers')
         self.assertEqual(set(editor.permissions.values_list('content_type__model', flat=True)), expected_content)
-        self.assertEqual(set(office.permissions.values_list('content_type__model', flat=True)), {'application', 'contactmessage'})
+        self.assertEqual(set(office.permissions.values_list('content_type__model', flat=True)), {'application', 'contactmessage', 'sitesettings'})
         self.assertFalse(editor.permissions.filter(content_type__app_label__in=['auth', 'axes']).exists())
         self.assertEqual(editor.permissions.count(), len(expected_content) * 4)
-        self.assertEqual(office.permissions.count(), 8)
+        self.assertEqual(office.permissions.count(), 9)
 
     def test_admin_sees_role_powers_and_form_help(self):
         self.client.force_login(self.owner)

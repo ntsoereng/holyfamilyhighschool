@@ -19,13 +19,15 @@ STAFF_ROLES = (
         'label': 'School office — admissions and messages',
         'icon': 'mail',
         'models': ('application', 'contactmessage'),
-        'summary': 'Handles private admissions records and enquiries.',
+        'extra_permissions': ('change_admissions_settings',),
+        'summary': 'Handles admissions settings, private applications and enquiries.',
         'powers': (
-            'View and search applications, update their review status and add private staff notes.',
+            'Open or close admissions and update intake, payment and interview settings.',
+            'View, search and export applications to Excel, update their review status and add private staff notes.',
             'View and search contact messages, update their status and add private staff notes.',
             'Permanently delete applications and contact messages when authorised under the school’s recordkeeping policy.',
         ),
-        'limits': 'Cannot edit or publish website content, change Site Settings, manage staff accounts, or access Django administration.',
+        'limits': 'Cannot edit other website content or general Site Settings, manage staff accounts, or access Django administration.',
     },
 )
 STAFF_ROLE_CHOICES = tuple((role['name'], role['label']) for role in STAFF_ROLES) + (
@@ -46,6 +48,9 @@ def ensure_staff_groups(*, synchronise=False):
                 content_type__app_label='school', content_type__model__in=role['models'],
                 codename__in=[f'{action}_{model}' for model in role['models']
                               for action in ('view', 'add', 'change', 'delete')])
+            permissions = list(permissions) + list(Permission.objects.filter(
+                content_type__app_label='school', content_type__model='sitesettings',
+                codename__in=role.get('extra_permissions', ())))
             if synchronise:
                 group.permissions.set(permissions)
             else:

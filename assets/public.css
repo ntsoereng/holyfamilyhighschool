@@ -840,4 +840,7 @@
     .public-site .donation-options > article, .public-site .donation-arrange { padding: 24px; }
     .public-site .donation-contacts { flex-direction: column; align-items: flex-start; gap: 10px; }
   }
+  .public-site .admissions-closed-notice { padding: 32px; max-width: 760px; margin-inline: auto; }
+  .public-site .admissions-closed-notice h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-block: 20px 16px; }
+  .public-site .admissions-closed-notice p { margin-bottom: 0; }
 }

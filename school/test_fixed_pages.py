@@ -49,8 +49,9 @@ class FixedPageTests(TestCase):
         for key, path in [('about', '/about/'), ('curriculum', '/curriculum/'), ('staff', '/our-staff/'),
                           ('calendar', '/events/'), ('contact', '/contact/'), ('admissions', '/apply/')]:
             with self.subTest(key=key):
+                settings_url = '/staff/admissions/settings/' if key == 'admissions' else '/staff/settings/'
                 self.assertNotContains(self.client.get(path), 'has-header-image')
-                response = self.client.post('/staff/settings/', self.payload(**{
+                response = self.client.post(settings_url, self.payload(**{
                     key + '_image': self.image(), key + '_image_alt': key + ' photograph'}))
                 self.assertEqual(response.status_code, 302)
                 self.site.refresh_from_db()
@@ -58,7 +59,7 @@ class FixedPageTests(TestCase):
                 self.assertContains(response, 'has-header-image')
                 self.assertContains(response, getattr(self.site, key + '_image').url)
                 self.assertContains(response, f'alt="{key} photograph"')
-                response = self.client.post('/staff/settings/', self.payload(**{key + '_image-clear': 'on'}))
+                response = self.client.post(settings_url, self.payload(**{key + '_image-clear': 'on'}))
                 self.assertEqual(response.status_code, 302)
                 self.assertNotContains(self.client.get(path), 'has-header-image')
 

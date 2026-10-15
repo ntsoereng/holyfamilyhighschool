@@ -11,14 +11,14 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_POST, require_http_methods, require_safe
 from .roles import STAFF_ROLES
 from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost
-from .staff_forms import (StaffAuthenticationForm, ArticleForm, EventForm, ValueForm,
+from .staff_forms import (AdmissionsSettingsForm, StaffAuthenticationForm, ArticleForm, EventForm, ValueForm,
                           SettingsForm, ApplicationReviewForm, StaffUserCreationForm, ContactReviewForm, DepartmentForm, StaffMemberForm, SubjectForm, StatisticForm, StudentAuthorForm, SchoolLifePostForm)
 
 # Fixed registry: URL input can never choose arbitrary models, forms or permissions.
@@ -175,7 +175,7 @@ def content_delete(request, section, pk):
 def school_settings(request):
     require_permission(request, SiteSettings, 'change')
     obj = SiteSettings.objects.first() or SiteSettings(pk=1)
-    form = SettingsForm(request.POST if request.method == 'POST' else None, request.FILES or None, instance=obj)
+    form = SettingsForm(request.POST if request.method == 'POST' else None, request.FILES or None, instance=obj, admissions_separate=True)
     if request.method == 'POST' and form.is_valid():
         with transaction.atomic():
             record = form.save()
@@ -186,10 +186,8 @@ def school_settings(request):
                                             'settings_editor': True})
 
 
-@staff_required
-def applications(request):
-    require_permission(request, Application, 'view')
-    records = Application.objects.all()
+def filtered_applications(request):
+    records = Application.objects.all().order_by('-submitted_at', '-pk')
     query = request.GET.get('q', '').strip()[:200]
     if query:
         records = records.filter(Q(learner_name__icontains=query) | Q(guardian_name__icontains=query)
@@ -198,8 +196,58 @@ def applications(request):
     state = request.GET.get('state', '')
     if state in dict(Application._meta.get_field('status').choices):
         records = records.filter(status=state)
+    else:
+        state = ''
+    return records, query, state
+
+
+@staff_required
+def applications(request):
+    from urllib.parse import urlencode
+    require_permission(request, Application, 'view')
+    records, query, state = filtered_applications(request)
     return render(request, 'staff/applications.html', {'items': Paginator(records, 20).get_page(request.GET.get('page')),
-        'query': query, 'state': state, 'statuses': Application._meta.get_field('status').choices})
+        'query': query, 'state': state, 'export_query': urlencode({'q': query, 'state': state}),
+        'statuses': Application._meta.get_field('status').choices})
+
+
+@require_safe
+@staff_required
+def applications_export(request):
+    from .application_exports import export_applications
+    require_permission(request, Application, 'view')
+    records, query, state = filtered_applications(request)
+    output, count = export_applications(records)
+    try:
+        LogEntry.objects.create(user=request.user, content_type=ContentType.objects.get_for_model(Application),
+            object_repr='Applications export', action_flag=CHANGE,
+            change_message=f'Exported {count} application records to Excel. Search filter: {bool(query)}; status filter: {state or "all"}.')
+        filename = f'HFHS-applications-{timezone.localtime():%Y%m%d-%H%M%S}.xlsx'
+        response = FileResponse(output, as_attachment=True, filename=filename,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Cache-Control'] = 'no-store, private'
+        return response
+    except Exception:
+        output.close()
+        raise
+
+
+@require_http_methods(['GET', 'POST'])
+@staff_required
+def admissions_settings(request):
+    if not (request.user.has_perm('school.change_admissions_settings') or request.user.has_perm('school.change_sitesettings')):
+        raise PermissionDenied
+    obj = SiteSettings.objects.first() or SiteSettings(pk=1)
+    form = AdmissionsSettingsForm(request.POST if request.method == 'POST' else None,
+                                  request.FILES or None, instance=obj)
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            record = form.save()
+            audit(request, record, CHANGE, 'Admissions settings updated in staff workspace.')
+        messages.success(request, 'Admissions settings saved.')
+        return redirect('staff-admissions-settings')
+    return render(request, 'staff/edit.html', {'form': form, 'title': 'Admissions settings',
+        'back_url': reverse('staff-home'), 'admissions_editor': True, 'preview_url': reverse('apply')})
 
 
 @require_http_methods(['GET', 'POST'])

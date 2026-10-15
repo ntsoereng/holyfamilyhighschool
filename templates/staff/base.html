@@ -15,8 +15,11 @@
 {% if perms.school.view_article %}<a href="{% url 'staff-list' 'articles' %}" {% if section == 'articles' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='news' %}News & articles</a>{% endif %}
 {% if perms.school.view_event %}<a href="{% url 'staff-list' 'events' %}" {% if section == 'events' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='calendar' %}Events</a>{% endif %}
 </div>{% endif %}
-{% if perms.school.view_application or perms.school.view_contactmessage %}<div class="staff-nav-group"><p class="staff-nav-label">School office</p>
-{% if perms.school.view_application %}<a href="{% url 'staff-applications' %}">{% include 'components/icon.html' with name='document' %}Applications</a>{% endif %}
+{% if perms.school.view_application or perms.school.change_admissions_settings or perms.school.change_sitesettings %}<div class="staff-nav-group"><p class="staff-nav-label">Admissions</p>
+{% if perms.school.view_application %}<a href="{% url 'staff-applications' %}" {% if request.resolver_match.url_name == 'staff-applications' or request.resolver_match.url_name == 'staff-application' or request.resolver_match.url_name == 'staff-application-delete' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='document' %}Applications</a>{% endif %}
+{% if perms.school.change_admissions_settings or perms.school.change_sitesettings %}<a href="{% url 'staff-admissions-settings' %}" {% if request.resolver_match.url_name == 'staff-admissions-settings' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='settings' %}Admissions settings</a>{% endif %}
+</div>{% endif %}
+{% if perms.school.view_contactmessage %}<div class="staff-nav-group"><p class="staff-nav-label">School office</p>
 {% if perms.school.view_contactmessage %}<a href="{% url 'staff-messages' %}" {% if request.resolver_match.url_name == 'staff-messages' or request.resolver_match.url_name == 'staff-message' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='mail' %}Messages</a>{% endif %}
 </div>{% endif %}
 {% if perms.school.change_sitesettings or user.is_superuser %}<div class="staff-nav-group"><p class="staff-nav-label">Administration</p>

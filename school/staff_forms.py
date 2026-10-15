@@ -63,18 +63,22 @@ class SettingsForm(forms.ModelForm):
                        for name in ['admissions_deadline', 'admissions_interview_date']} | {
                        'admissions_interview_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'})}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, admissions_separate=False, **kwargs):
         super().__init__(*args, **kwargs)
+        if admissions_separate:
+            for name in list(self.fields):
+                if name.startswith('admissions_'):
+                    self.fields.pop(name)
         if self.is_bound:
             # An older workspace form may not contain these new cycle settings.
             for name in ADMISSIONS_CYCLE_FIELDS:
-                if name not in self.data:
+                if name in self.fields and name not in self.data:
                     self.fields[name].required = False
 
     def clean(self):
         cleaned = super().clean()
         # Preserve newly introduced content when an older settings form is submitted.
-        for name in self._meta.fields:
+        for name in self.fields:
             if name in ADMISSIONS_CYCLE_FIELDS or name.startswith(('about_', 'curriculum_', 'staff_', 'calendar_')) or name in {
                 'contact_image', 'contact_image_alt', 'admissions_image', 'admissions_image_alt'}:
                 if name not in self.data and name not in self.files and name + '-clear' not in self.data:
@@ -99,7 +103,22 @@ class SettingsForm(forms.ModelForm):
             ('Admissions cycle & interview details', ADMISSIONS_CYCLE_FIELDS),
             ('Privacy & demonstration', ['privacy_text', 'demo_mode']),
         ]
-        return [(title, [self[name] for name in names]) for title, names in groups]
+        return [(title, [self[name] for name in names if name in self.fields])
+                for title, names in groups if any(name in self.fields for name in names)]
+
+
+class AdmissionsSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SiteSettings
+        fields = ['admissions_open', 'admissions_heading', 'admissions_text', 'admissions_image',
+                  'admissions_image_alt', 'admissions_requirements'] + ADMISSIONS_CYCLE_FIELDS
+        widgets = {name: widget for name, widget in SettingsForm.Meta.widgets.items() if name.startswith('admissions_')}
+        help_texts = {'admissions_open': 'When closed, the public page shows only a closure notice and application submissions are disabled.'}
+
+    @property
+    def fieldsets(self):
+        return [('Admissions status & page', [self[name] for name in self.Meta.fields if name not in ADMISSIONS_CYCLE_FIELDS]),
+                ('Intake, payment & interviews', [self[name] for name in ADMISSIONS_CYCLE_FIELDS])]
 
 
 class ApplicationReviewForm(forms.ModelForm):
@@ -112,7 +131,7 @@ class ApplicationReviewForm(forms.ModelForm):
 
 class StaffUserCreationForm(UserCreationForm):
     role = forms.ChoiceField(choices=STAFF_ROLE_CHOICES, help_text=(
-        'Content editor manages public content and Site Settings. School office handles private applications and messages, '
+        'Content editor manages public content and Site Settings. School office manages admissions settings and private applications and messages, '
         'including deletion. The combined role has both sets of access. None can manage staff accounts. '
         'See the role guide above for full details.'))
     class Meta(UserCreationForm.Meta):

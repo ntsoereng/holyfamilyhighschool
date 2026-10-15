@@ -83,7 +83,7 @@ def metadata(request):
         'curriculum': (f'Curriculum · {school.name}', school.curriculum_intro, school.curriculum_image, school.curriculum_image_alt),
         'school-staff': (f'Our staff · {school.name}', school.staff_intro, school.staff_image, school.staff_image_alt),
         'events': (f'Calendar · {school.name}', school.calendar_intro, school.calendar_image, school.calendar_image_alt),
-        'apply': (f'Admissions · {school.name}', school.admissions_text, school.admissions_image, school.admissions_image_alt),
+        'apply': (f'Admissions · {school.name}', school.admissions_text if school.admissions_open else f'Admissions at {school.name} are currently closed. Contact the school office for information about the next intake.', school.admissions_image if school.admissions_open else None, school.admissions_image_alt if school.admissions_open else ''),
         'school-life': ('School Life · ' + school.name, f'Stories, poems and articles by students at {school.name}.', None, ''),
         'news': (f'News · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
         'application-success': (f'Application received · {school.name}', 'Your application has been received. Keep your private reference for follow-up with the school office.', None, ''),

@@ -137,6 +137,7 @@ class SiteSettings(models.Model):
     class Meta:
         verbose_name = 'School settings'
         verbose_name_plural = 'School settings'
+        permissions = [('change_admissions_settings', 'Can change admissions settings')]
 
     def save(self, *args, **kwargs):
         self.pk = 1

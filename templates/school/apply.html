@@ -3,8 +3,11 @@
 
 {% block extra_head %}<script src="{% static 'js/admissions.js' %}" defer></script>{% endblock %}
 {% block content %}
+{% if school.admissions_open %}
 {% include 'components/page_header.html' with eyebrow='ADMISSIONS' title=school.admissions_heading|default:'Admissions' introduction=school.admissions_text image=school.admissions_image image_alt=school.admissions_image_alt %}
 
+{% else %}{% include 'components/page_header.html' with title='Admissions' %}{% endif %}
+{% if school.admissions_open %}
 <section class="hf-soft-section">
   <div class="container application-layout section">
     <aside class="hf-admissions-sidebar" aria-label="Application information">
@@ -66,10 +69,9 @@
         <div class="hf-application-consent">{% include 'components/public_field.html' with field=form.consent %}<p class="small">Read how your information is handled in our <a class="text-link" href="{% url 'privacy' %}">Privacy Policy</a>.</p></div>
         <div class="hf-form-footer"><p class="small">Save the reference number shown after submission. Submitting an application does not guarantee a place.</p><button class="button" type="submit">Submit application {% include 'components/icon.html' with name='chevron' %}</button></div>
       </form>
-      {% else %}
-      <div class="application-form hf-card hf-admissions-closed"><span class="icon-tile">{% include 'components/icon.html' with name='book' %}</span><p class="eyebrow">ADMISSIONS UPDATE</p><h2>Thank you for your interest.</h2><p>Applications are currently closed. Contact the school office for information about the next intake.</p><div class="hf-action-row"><a class="button" href="{% url 'contact' %}">Contact the school office</a><a class="button button-outline" href="{% url 'curriculum' %}">Explore our subjects</a></div></div>
       {% endif %}
     </div>
   </div>
 </section>
+{% else %}<section class="container section"><div class="hf-card admissions-closed-notice" role="status"><span class="icon-tile">{% include 'components/icon.html' with name='document' %}</span><h2>Admissions are currently closed</h2><p>We are not accepting applications at the moment. Please check back for the next intake or <a class="text-link" href="{% url 'contact' %}">contact the school office</a> for information.</p></div></section>{% endif %}
 {% endblock %}
