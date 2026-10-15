@@ -12,8 +12,6 @@
         {% else %}<div class="staff-portrait-placeholder" aria-hidden="true">{{ member.title|slice:':1' }}</div>{% endif %}
       </div>
       <div class="hf-profile-content">
-        <p class="eyebrow">AT HOLY FAMILY</p>
-        <h2>{{ member.display_name }}</h2>
         {% if member.is_management and member.management_role %}<p class="staff-position">{{ member.get_management_role_display }}</p>{% endif %}
         {% if member.position %}<p class="staff-position">{{ member.position }}</p>{% endif %}
         {% if member.date_from %}<p class="hf-profile-meta">At Holy Family from <time datetime="{{ member.date_from|date:'Y-m-d' }}">{{ member.date_from|date:'j F Y' }}</time></p>{% endif %}

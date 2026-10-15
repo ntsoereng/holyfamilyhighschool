@@ -422,7 +422,7 @@
   .public-site .hf-mission-card > .icon-tile, .public-site .hf-vision-card > .icon-tile, .public-site .hf-values-card > .icon-tile { margin-bottom: 25px; }
   .public-site .hf-history > h2 { font-size: clamp(1.9rem, 3vw, 2.5rem); margin-bottom: 24px; }
   .public-site .hf-school-motto { border-left: 3px solid #d5b76f; padding-left: 16px; margin-top: 25px; font-style: italic; }
-  .public-site .hf-about-principles h3 { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; }
+  .public-site .hf-about-principles > article > h2 { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; }
   .public-site .hf-value-list h4 { font-size: .96rem; color: white; margin: 0 0 6px; }
   .public-site .hf-values-card p { color: #ffffffbf; }
   .public-site .hf-values-card p.eyebrow { color: #eed6a3; }

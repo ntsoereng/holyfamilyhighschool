@@ -7,7 +7,6 @@
 <section class="hf-soft-section" id="story">
   <div class="container section hf-about-opening">
     <div class="hf-history">
-      <p class="eyebrow">OUR HISTORY</p>
       <h2>Our history</h2>
       {% if school.about_text %}<p class="lead">{{ school.about_text }}</p>{% endif %}
       <div class="prose history-content">
@@ -16,7 +15,6 @@
     </div>
     {% if school.about_mission %}<article class="hf-card hf-mission-card" id="purpose">
       <span class="icon-tile">{% include 'components/icon.html' with name='shield' %}</span>
-      <p class="eyebrow">OUR MISSION</p>
       <h2>Our mission</h2>
       {{ school.about_mission|linebreaks }}
     </article>{% endif %}
@@ -26,25 +24,19 @@
 {% if school.about_vision or values or statistics %}
 <section class="container section" id="values">
   {% if school.about_vision or values %}
-  <div class="hf-section-title">
-    <p class="eyebrow">WHAT SHAPES OUR SCHOOL</p>
-    <h2>{% if school.about_vision and values %}Vision and values{% elif school.about_vision %}Our vision{% else %}Our values{% endif %}</h2>
-  </div>
   <div class="hf-about-principles">
     {% if school.about_vision %}<article class="hf-card hf-vision-card">
       <span class="icon-tile">{% include 'components/icon.html' with name='book' %}</span>
-      <p class="eyebrow">OUR VISION</p>
-      <h3>Our vision</h3>
+      <h2>Our vision</h2>
       {{ school.about_vision|linebreaks }}
     </article>
     {% endif %}
     {% if values %}<article class="hf-card hf-values-card">
       <span class="icon-tile">{% include 'components/icon.html' with name='people' %}</span>
-      <p class="eyebrow">OUR VALUES</p>
-      <h3>Our values</h3>
+      <h2>Our values</h2>
       <div class="hf-value-list">
         {% for value in values %}
-        <div class="hf-value-item"><h4>{{ value.title }}</h4><p>{{ value.description }}</p></div>
+        <div class="hf-value-item"><h3>{{ value.title }}</h3><p>{{ value.description }}</p></div>
         {% endfor %}
       </div>
     </article>{% endif %}
