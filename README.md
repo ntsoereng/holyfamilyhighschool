@@ -1,6 +1,6 @@
 # Holy Family High School
 
-A Django school website with a custom, permission-controlled staff workspace. The design draws on Sacred Heart High School's minimalist page flow, with an original editorial hero, numbered navigation cards, and Holy Family's original crest, forest green and gold, warm neutral backgrounds, locally hosted Libre Baskerville and Manrope fonts, and Tailwind CSS **4.3.3**. No frontend framework or external font request is required at runtime.
+A Django school website with a custom, permission-controlled staff workspace. The design draws on Sacred Heart High School's minimalist page flow, with an original editorial hero, numbered navigation cards, and Holy Family's original crest, forest green and gold, warm neutral backgrounds, locally hosted Libre Baskerville and Rubik fonts, and Tailwind CSS **4.3.3**. No frontend framework or external font request is required at runtime.
 
 ## Run locally
 

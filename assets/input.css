@@ -9,7 +9,7 @@
  --color-forest-dark: #10392d;
  --color-rust: #b9513c;
  --color-gold: #e3b65b;
- --font-sans: 'Manrope', sans-serif;
+ --font-sans: 'Rubik', system-ui, sans-serif;
  --font-serif: 'Libre Baskerville', Georgia, serif;
 }
 @layer base {
