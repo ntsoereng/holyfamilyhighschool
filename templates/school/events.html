@@ -4,7 +4,7 @@
 {% block body_class %}calendar-view{% endblock %}
 {% block extra_head %}<script src="{% static 'js/calendar.js' %}" defer></script>{% endblock %}
 {% block content %}
-{% include 'components/page_header.html' with eyebrow='SCHOOL CALENDAR' breadcrumb='Calendar' title=school.calendar_heading introduction=school.calendar_intro image=school.calendar_image image_alt=school.calendar_image_alt %}
+{% include 'components/page_header.html' with eyebrow='SCHOOL CALENDAR' breadcrumb='Calendar' title=school.calendar_heading|default:'School calendar' introduction=school.calendar_intro image=school.calendar_image image_alt=school.calendar_image_alt %}
 
 {% timezone calendar_timezone %}
 <section class="hf-soft-section">

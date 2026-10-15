@@ -769,4 +769,34 @@
     .public-site .calendar-agenda .calendar-empty { padding:4px 0; }
     .public-site .calendar-upcoming-panel { border-top:1px solid #dce5d6; padding-top:8px; }
   }
+
+  .public-site #navigation > .nav-facebook { display: inline-flex; align-items: center; gap: 7px; background: #174b3b0d; color: #174b3b; font-weight: 650; border: 1px solid #174b3b18; }
+  .public-site .nav-facebook .icon { width: 17px; height: 17px; flex-shrink: 0; }
+  .public-site .site-footer { padding-top: 32px; }
+  .public-site .footer-grid { gap: 24px; padding-bottom: 24px; }
+  .public-site .footer-brand { font-size: .9rem; margin-bottom: 12px; gap: 10px; }
+  .public-site .footer-brand img { width: 36px; height: 36px; }
+  .public-site .footer-identity > p { font-size: .78rem; line-height: 1.65; margin-bottom: 0; max-width: 290px; }
+  .public-site .footer-grid h2 { margin-bottom: 10px; font-size: .8rem; }
+  .public-site .footer-grid > div > a:not(.footer-brand) { margin-bottom: 0; padding-block: 5px; min-height: 30px; }
+  .public-site .footer-contact { margin-bottom: 5px; gap: 8px; }
+  .public-site .footer-contact p { line-height: 1.55; margin: 0; }
+  .public-site .footer-bottom { display: block; margin-top: 0; padding-block: 16px; }
+  .public-site .footer-bottom > .footer-legal { display: flex; justify-content: space-between; align-items: center; gap: 10px 24px; flex-wrap: wrap; }
+  .public-site .footer-legal nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  .public-site .footer-credit { margin: 8px 0 0; font-size: .68rem; }
+  .public-site .footer-credit .developer-credit { color: #a6bbb2; }
+  .public-site .footer-credit .developer-credit:hover { color: #d9e4de; }
+  @media (min-width: 1001px) and (max-width: 1200px) {
+    .public-site #navigation { gap: 2px; }
+    .public-site #navigation > a:not(.button), .public-site .nav-dropdown summary { padding-inline: 8px; }
+    .public-site #navigation > .button { margin-left: 2px; padding-inline: 12px; }
+    .public-site .brand > span { max-width: 180px; }
+  }
+  @media (max-width: 1000px) { .public-site .footer-grid { gap: 24px 40px; } }
+  @media (max-width: 760px) {
+    .public-site .footer-bottom { margin-top: 0; }
+    .public-site .footer-bottom > .footer-legal { align-items: flex-start; flex-direction: column; gap: 10px; }
+  }
+  @media (max-width: 480px) { .public-site .footer-grid { gap: 20px 24px; } }
 }

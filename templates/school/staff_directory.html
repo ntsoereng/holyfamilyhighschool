@@ -2,7 +2,7 @@
 
 
 {% block content %}
-{% include 'components/page_header.html' with eyebrow='THE PEOPLE WHO HELP YOU GROW' title=school.staff_heading introduction=school.staff_intro image=school.staff_image image_alt=school.staff_image_alt %}
+{% include 'components/page_header.html' with eyebrow='THE PEOPLE WHO HELP YOU GROW' title=school.staff_heading|default:'Our staff' introduction=school.staff_intro image=school.staff_image image_alt=school.staff_image_alt %}
 
 <section class="hf-soft-section">
   <div class="container section directory-page">
@@ -13,7 +13,7 @@
     </section>
     {% endif %}
     {% if departments %}
-    <div class="section-heading"><div><p class="eyebrow">MEET OUR TEAM</p><h2>Start with a department</h2><p>Explore our departments to meet the people who teach and support you.</p></div></div>
+    <div class="section-heading"><div><p class="eyebrow">MEET OUR TEAM</p><h2>Departments</h2><p>Explore our departments to meet the people who teach and support you.</p></div></div>
     <div class="hf-department-grid">
       {% for department in departments %}
       <a class="hf-department-card hf-card" href="{% url 'school-department' department.pk %}">

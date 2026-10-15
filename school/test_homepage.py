@@ -50,5 +50,5 @@ class HomepageTests(TestCase):
             self.assertNotContains(response, text)
         self.assertContains(response, 'Learning for tomorrow')
         self.assertNotContains(response, 'Our school community')
-        self.assertLess(response.content.index(b'Upcoming dates'), response.content.index(b'Latest stories'))
+        self.assertLess(response.content.index(b'Upcoming dates'), response.content.index(b'Latest news'))
         self.assertNotContains(response, 'hero-invitation')

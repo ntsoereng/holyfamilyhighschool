@@ -50,7 +50,7 @@ class PublicStaffBrowsingTests(TestCase):
         self.assertContains(response, 'Deputy principal', count=1)
         self.assertNotContains(response, 'Draft manager')
         self.assertLess(response.content.index(b'id="management-heading"'),
-                        response.content.index(b'Start with a department'))
+                        response.content.index(b'Departments'))
         self.assertNotIn(unassigned_manager, response.context['other_staff'])
         self.assertEqual(self.client.get(self.profile_url(manager)).status_code, 200)
         self.assertIn('is_management', StaffMemberForm().fields)

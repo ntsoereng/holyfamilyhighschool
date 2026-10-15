@@ -3,7 +3,7 @@
 
 {% block extra_head %}<script src="{% static 'js/admissions.js' %}" defer></script>{% endblock %}
 {% block content %}
-{% include 'components/page_header.html' with eyebrow='ADMISSIONS' title=school.admissions_heading introduction=school.admissions_text image=school.admissions_image image_alt=school.admissions_image_alt %}
+{% include 'components/page_header.html' with eyebrow='ADMISSIONS' title=school.admissions_heading|default:'Admissions' introduction=school.admissions_text image=school.admissions_image image_alt=school.admissions_image_alt %}
 
 <section class="hf-soft-section">
   <div class="container application-layout section">

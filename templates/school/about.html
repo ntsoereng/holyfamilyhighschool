@@ -2,13 +2,13 @@
 
 
 {% block content %}
-{% include 'components/page_header.html' with eyebrow='WELCOME TO HOLY FAMILY' breadcrumb='About' title=school.about_heading introduction=school.about_intro image=school.about_image image_alt=school.about_image_alt %}
+{% include 'components/page_header.html' with eyebrow='WELCOME TO HOLY FAMILY' breadcrumb='About' title=school.about_heading|default:'About us' introduction=school.about_intro image=school.about_image image_alt=school.about_image_alt %}
 
 <section class="hf-soft-section" id="story">
   <div class="container section hf-about-opening">
     <div class="hf-history">
       <p class="eyebrow">OUR HISTORY</p>
-      <h2>Rooted in faith.<br>Growing together.</h2>
+      <h2>Our history</h2>
       {% if school.about_text %}<p class="lead">{{ school.about_text }}</p>{% endif %}
       <div class="prose history-content">
         {% if school.about_history %}{{ school.about_history|safe }}{% else %}<p>{{ school.about_intro }}</p>{% endif %}
@@ -28,7 +28,7 @@
   {% if school.about_vision or values %}
   <div class="hf-section-title">
     <p class="eyebrow">WHAT SHAPES OUR SCHOOL</p>
-    <h2>{% if school.about_vision and values %}A shared vision.<br>Values to live by.{% elif school.about_vision %}Our vision{% else %}Values to live by.{% endif %}</h2>
+    <h2>{% if school.about_vision and values %}Vision and values{% elif school.about_vision %}Our vision{% else %}Our values{% endif %}</h2>
   </div>
   <div class="hf-about-principles">
     {% if school.about_vision %}<article class="hf-card hf-vision-card">

@@ -2,7 +2,7 @@
 
 
 {% block content %}
-{% include 'components/page_header.html' with eyebrow='WE’RE HERE TO HELP' title=school.contact_heading introduction=school.contact_text breadcrumb='Contact' image=school.contact_image image_alt=school.contact_image_alt %}
+{% include 'components/page_header.html' with eyebrow='WE’RE HERE TO HELP' title=school.contact_heading|default:'Contact us' introduction=school.contact_text breadcrumb='Contact' image=school.contact_image image_alt=school.contact_image_alt %}
 
 <section class="hf-soft-section">
   <div class="container section contact-layout">
@@ -21,7 +21,7 @@
     </aside>
 
     <div class="contact-form-panel hf-card">
-      <div class="hf-form-heading"><span class="icon-tile">{% include 'components/icon.html' with name='mail' %}</span><div><p class="eyebrow">SEND A MESSAGE</p><h2>How can we help?</h2><p class="muted">Tell us a little about your enquiry. The school office will use the details below to reply.</p></div></div>
+      <div class="hf-form-heading"><span class="icon-tile">{% include 'components/icon.html' with name='mail' %}</span><div><p class="eyebrow">SEND A MESSAGE</p><h2>Send a message</h2><p class="muted">Tell us a little about your enquiry. The school office will use the details below to reply.</p></div></div>
       {% if messages %}<div class="success-notice" role="status">{% for message in messages %}<p>{% include 'components/icon.html' with name='check' %}{{ message }}</p>{% endfor %}</div>{% endif %}
       {% if rate_limited %}<div class="form-error" role="alert">Too many attempts. Please try again in an hour or contact the office by phone.</div>{% endif %}
       <form method="post" class="contact-form" novalidate>
@@ -46,7 +46,7 @@
   </div>
   {% if school.safe_maps_embed_url %}
   <section class="container map-section hf-card" aria-labelledby="location-heading">
-    <div class="section-heading"><div><p class="eyebrow">FIND THE SCHOOL</p><h2 id="location-heading">Plan your visit</h2><p>Please contact the office before visiting so we can welcome you.</p></div></div>
+    <div class="section-heading"><div><p class="eyebrow">FIND THE SCHOOL</p><h2 id="location-heading">School location</h2><p>Please contact the office before visiting so we can welcome you.</p></div></div>
     <iframe class="contact-map" src="{{ school.safe_maps_embed_url }}" title="Map showing the location of {{ school.name }}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
   </section>
   {% endif %}

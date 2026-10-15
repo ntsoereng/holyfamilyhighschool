@@ -29,7 +29,7 @@ class SiteSettings(models.Model):
                              validate_image], blank=True)
     hero_eyebrow = models.CharField(max_length=120, default='Quid retribuam')
     hero_title = models.CharField(
-        max_length=180, default='A strong foundation. A world of possibility.')
+        max_length=180, default='Holy Family High School')
     hero_text = models.TextField(
         default='A place to grow in knowledge, faith and confidence. Discover your strengths, follow your curiosity and shape your future at Holy Family.')
     hero_image = models.ImageField(upload_to=image_path, validators=[
@@ -40,19 +40,19 @@ class SiteSettings(models.Model):
     about_text = models.TextField(
         default='At Holy Family, learning extends beyond the classroom. We believe in nurturing curious minds, building character, and helping every learner find a meaningful path forward.')
     about_heading = models.CharField(
-        max_length=180, default='Rooted in faith. Growing in possibility.', blank=True)
+        max_length=180, default='About us', blank=True)
     about_intro = models.TextField(
         default='Discover the story and purpose of Holy Family High School.', blank=True)
     curriculum_heading = models.CharField(
-        max_length=180, default='Curiosity today. Possibility tomorrow.', blank=True)
+        max_length=180, default='Curriculum', blank=True)
     curriculum_intro = models.TextField(
         default='Explore the subjects that help you build knowledge, confidence and a sense of purpose.', blank=True)
     staff_heading = models.CharField(
-        max_length=180, default='The people behind every possibility.', blank=True)
+        max_length=180, default='Our staff', blank=True)
     staff_intro = models.TextField(
         default='Find your department and meet the teachers and school team who support you every day.', blank=True)
     calendar_heading = models.CharField(
-        max_length=180, default='A community in motion.', blank=True)
+        max_length=180, default='School calendar', blank=True)
     calendar_intro = models.TextField(
         default='School events and important dates, all in one place.', blank=True)
     about_image = models.ImageField(
@@ -88,10 +88,10 @@ class SiteSettings(models.Model):
                                             help_text='In Google Maps choose Share → Embed a map. Paste only the URL inside src="...", not the whole iframe. Leave blank to hide the map.')
     footer_text = models.TextField(
         default='A Catholic school for girls, educating the whole person in the tradition of the Holy Family Sisters.')
-    contact_heading = models.CharField(max_length=160, default='Get in touch')
+    contact_heading = models.CharField(max_length=160, default='Contact us')
     contact_text = models.TextField(
         default='Contact our school office about admissions, school life or arranging a visit.')
-    facebook_url = models.URLField(blank=True)
+    facebook_url = models.URLField(blank=True, default='https://www.facebook.com/')
     statistics_title = models.CharField(
         max_length=160, default='Holy Family in numbers')
     statistics_text = models.TextField(
@@ -101,7 +101,7 @@ class SiteSettings(models.Model):
     phone = models.CharField(max_length=50, blank=True)
     admissions_open = models.BooleanField(default=True)
     admissions_heading = models.CharField(
-        max_length=180, default='Your next chapter starts here.')
+        max_length=180, default='Admissions')
     admissions_text = models.TextField(
         default='Take the next step in your learning journey. Complete your application with a parent or guardian, and our admissions team will guide you through what comes next.')
     admissions_requirements = models.TextField(

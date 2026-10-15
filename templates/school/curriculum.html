@@ -2,13 +2,13 @@
 
 
 {% block content %}
-{% include 'components/page_header.html' with eyebrow='TEACHING & LEARNING' breadcrumb='Curriculum' title=school.curriculum_heading introduction=school.curriculum_intro image=school.curriculum_image image_alt=school.curriculum_image_alt %}
+{% include 'components/page_header.html' with eyebrow='TEACHING & LEARNING' breadcrumb='Curriculum' title=school.curriculum_heading|default:'Curriculum' introduction=school.curriculum_intro image=school.curriculum_image image_alt=school.curriculum_image_alt %}
 
 <section class="hf-soft-section">
   <div class="container section curriculum-page">
     {% if school.curriculum_body %}<div class="prose curriculum-overview hf-curriculum-overview">{{ school.curriculum_body|safe }}</div>{% endif %}
     <div class="section-heading subject-heading" id="subjects">
-      <div><p class="eyebrow">EXPLORE LEARNING</p><h2>Subjects that open doors</h2></div>
+      <div><p class="eyebrow">EXPLORE LEARNING</p><h2>Subjects</h2></div>
       <a class="text-link" href="{% url 'school-staff' %}">Meet your teachers {% include 'components/icon.html' with name='chevron' %}</a>
     </div>
     <div class="subject-grid">
