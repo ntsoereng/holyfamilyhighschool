@@ -2,6 +2,7 @@
 @layer theme, base, components, public, utilities;
 @import "tailwindcss";
 @import "./public.css";
+@import "./glass.css";
 @source "../templates";
 @theme {
  --color-forest: #174b3b;

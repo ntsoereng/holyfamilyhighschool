@@ -1,0 +1,78 @@
+@layer public {
+  /* Solid surfaces remain the fallback when backdrop filters are unavailable. */
+  :root {
+    --glass-shadow: 0 8px 28px #10392d0b, 0 2px 6px #10392d05, inset 0 1px 0 #ffffffd9;
+    --glass-shadow-raised: 0 12px 32px #10392d12, 0 3px 8px #10392d08, inset 0 1px 0 #fff;
+    --glass-border: #ffffffd9;
+  }
+  body.public-site, body.staff-body {
+    background: radial-gradient(ellipse at 0 20%, #dce8dd66, transparent 48%), radial-gradient(ellipse at 100% 55%, #e9d9b855, transparent 45%), #f7f3ed;
+  }
+  .public-site .header, .staff-body .staff-topbar {
+    background: #fbfcf8;
+    border-bottom: 1px solid #174b3b14;
+    box-shadow: 0 4px 22px #10392d09, inset 0 1px 0 #fff;
+  }
+  .public-site :is(.hf-card, .article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row, .calendar-board, .contact-form-panel, .application-form, .legal-contents),
+  .staff-body :is(.staff-panel, .staff-stats a, .staff-login-card) {
+    background: linear-gradient(135deg, #fffdf9, #f6f9f3);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+  .public-site :is(.article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row), .staff-body .staff-stats a {
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .public-site :is(.article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row):focus-within,
+  .staff-body .staff-stats a:focus-visible { border-color: #729582; box-shadow: var(--glass-shadow-raised); }
+  .public-site .nav-dropdown-panel { background: #fcfdf9; border-color: #ffffffed; box-shadow: var(--glass-shadow-raised); }
+  .public-site :is(.icon-tile, .event-date) { background: linear-gradient(135deg, #ffffff94, #dce8dd8c); border: 1px solid #ffffffa8; box-shadow: inset 0 1px 0 #fff9, 0 2px 5px #174b3b05; }
+  .public-site #navigation > .nav-facebook { background: linear-gradient(135deg, #ffffffa8, #e1ebe16b); border-color: #174b3b1c; box-shadow: inset 0 1px 0 #fff; }
+  .public-site :is(.hf-values-card, .hf-contact-details, .hf-admissions-process) {
+    background: linear-gradient(135deg, #245c49f5, #10392df5);
+    border: 1px solid #ffffff30;
+    box-shadow: 0 10px 28px #10392d18, inset 0 1px 0 #ffffff26;
+    color: white;
+  }
+  .public-site :is(.hf-values-card, .hf-contact-details, .hf-admissions-process) .icon-tile { background: #ffffff12; border-color: #ffffff24; color: #eed6a3; }
+  .public-site .site-footer { background: linear-gradient(120deg, #10392d, #0d3126 75%); border-top: 1px solid #ffffff30; box-shadow: inset 0 1px 0 #ffffff0d; }
+  .staff-body .staff-sidebar { background: linear-gradient(155deg, #174b3bf5, #0d3126fa); border-right: 1px solid #ffffff24; box-shadow: 5px 0 25px #10392d0b; }
+  .staff-body :is(.staff-panel, .staff-stats a, .staff-login-card) { border-radius: 14px; }
+  .staff-body .staff-nav a[aria-current] { background: linear-gradient(120deg, #ffffff24, #ffffff0c); box-shadow: inset 0 1px 0 #ffffff15, 0 3px 8px #00000008; }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .public-site .header, .staff-body .staff-topbar {
+      background: #fafcf5c9;
+      -webkit-backdrop-filter: blur(18px) saturate(125%);
+      backdrop-filter: blur(18px) saturate(125%);
+    }
+    .public-site .nav-dropdown-panel {
+      background: #fafcf5f2;
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      backdrop-filter: blur(16px) saturate(120%);
+    }
+    .public-site :is(.hf-card, .article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row, .calendar-board, .contact-form-panel, .application-form, .legal-contents),
+    .staff-body :is(.staff-panel, .staff-stats a, .staff-login-card) {
+      background: linear-gradient(135deg, #ffffffe0, #f5f9f0a8);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+    .public-site .hf-values-card { background: linear-gradient(135deg, #245c49f5, #10392df5); }
+  }
+  @media (hover: hover) {
+    .public-site :is(.article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row):hover,
+    .staff-body .staff-stats a:hover { border-color: #b5cbbb; box-shadow: var(--glass-shadow-raised); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .public-site :is(.article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row), .staff-body .staff-stats a { transition: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .public-site .header, .public-site .nav-dropdown-panel, .staff-body .staff-topbar,
+    .public-site :is(.hf-card, .article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row, .calendar-board, .contact-form-panel, .application-form, .legal-contents),
+    .staff-body :is(.staff-panel, .staff-stats a, .staff-login-card) { background: #fafcf7; -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .public-site .hf-values-card { background: #174b3b; }
+  }
+  @media (forced-colors: active) {
+    .public-site .header, .public-site .nav-dropdown-panel, .staff-body .staff-topbar,
+    .public-site :is(.hf-card, .article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row, .calendar-board, .contact-form-panel, .application-form, .legal-contents),
+    .staff-body :is(.staff-panel, .staff-stats a, .staff-login-card) { background: Canvas; color: CanvasText; border: 1px solid CanvasText; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  }
+}
