@@ -3,7 +3,10 @@ document.documentElement.classList.add('js-enabled');
 const toggle = document.querySelector('[data-menu-toggle]');
 const menu = document.querySelector('[data-menu]');
 if (toggle && menu) {
+  const mobileMenu = window.matchMedia('(max-width: 1000px)');
   const setMenuOpen = (open, restoreFocus = false) => {
+    open = open && mobileMenu.matches;
+    menu.inert = mobileMenu.matches && !open;
     toggle.setAttribute('aria-expanded', String(open));
     menu.classList.toggle('is-open', open);
     if (!open) {
@@ -11,6 +14,8 @@ if (toggle && menu) {
     }
     if (restoreFocus) toggle.focus();
   };
+  mobileMenu.addEventListener('change', () => setMenuOpen(false, menu.contains(document.activeElement)));
+  setMenuOpen(false);
   toggle.addEventListener('click', () => {
     setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true');
   });

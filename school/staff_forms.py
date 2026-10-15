@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic
+from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost, ENTRY_LEVEL_CHOICES
 from .security import normalize_google_maps_embed
 
 ADMISSIONS_CYCLE_FIELDS = ['admissions_grade', 'admissions_year', 'admissions_fee',
@@ -21,9 +21,9 @@ class StaffAuthenticationForm(AuthenticationForm):
 class ArticleForm(forms.ModelForm):
     class Meta:
         model = Article
-        fields = ['title', 'slug', 'category', 'excerpt', 'body', 'image', 'image_alt', 'published', 'published_at']
+        fields = ['title', 'category', 'excerpt', 'body', 'image', 'image_alt', 'published', 'published_at']
         widgets = {'body': forms.Textarea(attrs={'class': 'rich-editor'}), 'published_at': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'})}
-        help_texts = {'slug': 'The unique address for this story, for example school-open-day.',
+        help_texts = {'body': 'Use Insert/edit image to upload an image within the article. JPEG, PNG and WebP images up to 5 MB are supported. Add an image description for accessibility.',
                       'published': 'Uncheck to keep this story as a draft.',
                       'published_at': 'Local Lesotho time. A future date schedules publication.'}
 
@@ -31,7 +31,7 @@ class ArticleForm(forms.ModelForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['title', 'slug', 'description', 'image', 'image_alt', 'location', 'starts_at', 'ends_at', 'published']
+        fields = ['title', 'description', 'image', 'image_alt', 'location', 'starts_at', 'ends_at', 'published']
         widgets = {field: forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'})
                    for field in ['starts_at', 'ends_at']} | {'description': forms.Textarea(attrs={'class': 'rich-editor'})}
         help_texts = {'starts_at': 'Local Lesotho time.', 'ends_at': 'Optional. Local Lesotho time.'}
@@ -148,19 +148,27 @@ class DepartmentForm(forms.ModelForm):
 
 
 class StaffMemberForm(forms.ModelForm):
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('is_management') and not cleaned.get('management_role'):
+            self.add_error('management_role', 'Select a role for school management.')
+        if not cleaned.get('is_management'):
+            cleaned['management_role'] = ''
+        return cleaned
+
     class Meta:
         model = StaffMember
-        fields = ['title', 'honorific', 'position', 'date_from', 'departments', 'biography', 'image', 'image_alt', 'order', 'published']
+        fields = ['title', 'honorific', 'position', 'date_from', 'is_management', 'management_role', 'departments', 'biography', 'image', 'image_alt', 'order', 'published']
         widgets = {'biography': forms.Textarea(attrs={'rows': 8}), 'departments': forms.CheckboxSelectMultiple,
                    'date_from': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'})}
         help_texts = {'image': 'Optional JPEG, PNG or WebP, up to 5 MB. The name’s initial is shown without a photo.',
-                      'published': 'Show this profile on the staff directory. Members of hidden departments remain hidden unless they also belong to a published department.'}
+                      'published': 'Show this profile on the staff directory. Members of hidden departments remain hidden unless they are in school management or also belong to a published department.'}
 
 
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['title', 'slug', 'introduction', 'body', 'image', 'image_alt', 'order', 'published']
+        fields = ['title', 'introduction', 'body', 'image', 'image_alt', 'order', 'published']
         widgets = {'body': forms.Textarea(attrs={'class': 'rich-editor'}), 'introduction': forms.Textarea(attrs={'rows': 3})}
         help_texts = {'body': 'Use the image upload button to embed images alongside formatted subject content.'}
 
@@ -170,3 +178,77 @@ class StatisticForm(forms.ModelForm):
         model = SchoolStatistic
         fields = ['title', 'value', 'description', 'icon', 'order', 'published', 'show_on_homepage', 'show_on_school_pages']
         help_texts = {'show_on_school_pages': 'Shown on the fixed About page.'}
+
+
+class StudentAuthorForm(forms.ModelForm):
+    class Meta:
+        model = StudentAuthor
+        fields = ['title', 'grade']
+
+    def clean_title(self):
+        from .submissions import normalize_name
+        name = normalize_name(self.cleaned_data['title'])
+        if not name or len(name) > 160:
+            raise forms.ValidationError('Enter a student name of up to 160 characters.')
+        return name
+
+
+class SchoolLifePostForm(forms.ModelForm):
+    new_author_name = forms.CharField(label='New student author’s name', max_length=160, required=False)
+    new_author_grade = forms.ChoiceField(label='New student author’s grade', required=False,
+                                         choices=[('', 'Select a grade'), *ENTRY_LEVEL_CHOICES])
+
+    class Meta:
+        model = SchoolLifePost
+        fields = ['title', 'category', 'excerpt', 'body', 'image', 'image_alt', 'published_at', 'published',
+                  'author', 'new_author_name', 'new_author_grade']
+        widgets = {'body': forms.Textarea(attrs={'class': 'rich-editor'}),
+                   'excerpt': forms.Textarea(attrs={'rows': 3}),
+                   'published_at': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'})}
+        help_texts = {'body': 'Use Insert/edit image to upload images between paragraphs. You can also paste or drag images into the editor. Add an image description for accessibility.',
+                      'published': 'Publish at the selected date and time. Future posts stay hidden until then.'}
+
+    def __init__(self, *args, can_add_author=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['author'].required = False
+        self.can_add_author = can_add_author
+        if not can_add_author:
+            for name in ['new_author_name', 'new_author_grade']:
+                self.fields[name].disabled = True
+        self.fields['author'].label = 'Existing student author'
+        self.fields['author'].help_text = 'Reuse a saved author, or leave this blank and enter a new author below. Only the student’s name and grade are published.'
+
+    def clean(self):
+        from .submissions import normalize_name
+        cleaned = super().clean()
+        name = normalize_name(cleaned.get('new_author_name', ''))
+        cleaned['new_author_name'] = name
+        if len(name) > 160:
+            self.add_error('new_author_name', 'Enter a student name of up to 160 characters.')
+        grade, author = cleaned.get('new_author_grade'), cleaned.get('author')
+        if author and (name or grade):
+            self.add_error('author', 'Choose an existing author or enter a new author, rather than both.')
+        elif not author:
+            if not self.can_add_author:
+                self.add_error('author', 'Select an existing student author.')
+            elif not name or not grade:
+                self.add_error('author', 'Select an existing author, or enter both a new author’s name and grade.')
+        return cleaned
+
+    def save(self, commit=True):
+        from .models import StudentAuthor
+        post = super().save(commit=False)
+        if not self.cleaned_data.get('author'):
+            author, _ = StudentAuthor.objects.get_or_create(title=self.cleaned_data['new_author_name'],
+                                                           grade=self.cleaned_data['new_author_grade'])
+            post.author = author
+        if commit:
+            post.save()
+            self.save_m2m()
+        return post
+
+
+    @property
+    def fieldsets(self):
+        return [('Writing & publication', [self[name] for name in ['title', 'category', 'excerpt', 'body', 'image', 'image_alt', 'published_at', 'published']]),
+                ('Student author', [self[name] for name in ['author', 'new_author_name', 'new_author_grade']])]

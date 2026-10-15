@@ -1,1 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>We couldn’t load this page.</title></head><body><main><h1>We couldn’t load this page.</h1><p>Please try again shortly.</p><a href="/">Return home</a></main></body></html>
+{% extends 'error_base.html' %}
+{% block error_title %}Please try again · Holy Family High School{% endblock %}
+{% block error_description %}The school website could not load this page. Please try again shortly.{% endblock %}
+{% block error_label %}TEMPORARILY UNAVAILABLE{% endblock %}

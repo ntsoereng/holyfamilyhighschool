@@ -24,14 +24,14 @@ class ArticleAdmin(admin.ModelAdmin):
     list_display = ['title','category','published','published_at']
     list_filter = ['published','category']
     search_fields = ['title','excerpt']
-    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ['slug']
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ['title','starts_at','location','published']
     list_filter = ['published','starts_at']
     search_fields = ['title','location']
-    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ['slug']
 
 @admin.register(SchoolValue)
 class SchoolValueAdmin(admin.ModelAdmin):
@@ -55,7 +55,28 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(StaffMember)
 class StaffMemberAdmin(admin.ModelAdmin):
-    list_display = ['title', 'honorific', 'position', 'date_from', 'published', 'order']
-    list_filter = ['published', 'departments']
+    readonly_fields = ['slug']
+    list_display = ['title', 'honorific', 'position', 'date_from', 'is_management', 'management_role', 'published', 'order']
+    list_filter = ['published', 'is_management', 'departments']
     search_fields = ['title', 'honorific', 'position', 'biography']
     filter_horizontal = ['departments']
+
+
+from .models import StudentAuthor, SchoolLifePost
+from .staff_forms import StudentAuthorForm, SchoolLifePostForm
+
+
+@admin.register(StudentAuthor)
+class StudentAuthorAdmin(admin.ModelAdmin):
+    form = StudentAuthorForm
+    list_display = ['title', 'grade']
+    search_fields = ['title']
+
+
+@admin.register(SchoolLifePost)
+class SchoolLifePostAdmin(admin.ModelAdmin):
+    readonly_fields = ['slug']
+    form = SchoolLifePostForm
+    list_display = ['title', 'author', 'category', 'published_at', 'published']
+    list_filter = ['category', 'published', 'author__grade']
+    search_fields = ['title', 'author__title']

@@ -16,12 +16,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
-from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic
+from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost
 from .staff_forms import (StaffAuthenticationForm, ArticleForm, EventForm, ValueForm,
-                          SettingsForm, ApplicationReviewForm, StaffUserCreationForm, ContactReviewForm, DepartmentForm, StaffMemberForm, SubjectForm, StatisticForm)
+                          SettingsForm, ApplicationReviewForm, StaffUserCreationForm, ContactReviewForm, DepartmentForm, StaffMemberForm, SubjectForm, StatisticForm, StudentAuthorForm, SchoolLifePostForm)
 
 # Fixed registry: URL input can never choose arbitrary models, forms or permissions.
 CONTENT = {
+    'school-life': (SchoolLifePost, SchoolLifePostForm, 'School Life', 'School Life post'),
+    'student-authors': (StudentAuthor, StudentAuthorForm, 'Student authors', 'student author'),
     'departments': (Department, DepartmentForm, 'Departments', 'department'),
     'staff-profiles': (StaffMember, StaffMemberForm, 'Staff profiles', 'staff profile'),
     'subjects': (Subject, SubjectForm, 'Subjects', 'subject'),
@@ -75,7 +77,7 @@ def dashboard(request):
     can_admissions = request.user.has_perm('school.view_application')
     recent = Application.objects.all()[:5] if can_admissions else []
     readable_types = [ContentType.objects.get_for_model(model).pk for model in
-                      [Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic]
+                      [Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost]
                       if request.user.has_perm(f'school.view_{model._meta.model_name}')]
     if request.user.is_superuser:
         readable_types.append(ContentType.objects.get_for_model(User).pk)
@@ -97,16 +99,18 @@ def content_list(request, section):
     require_permission(request, model, 'view')
     query = request.GET.get('q', '').strip()[:200]
     records = model.objects.all()
+    if section == 'school-life':
+        records = records.select_related('author')
     if section == 'staff-profiles':
         records = records.prefetch_related('departments')
     if query:
         records = records.filter(title__icontains=query)
     state = request.GET.get('state', '')
-    if section != 'values' and state in ['published', 'draft']:
+    if section not in {'values', 'student-authors'} and state in ['published', 'draft']:
         records = records.filter(published=state == 'published')
     rows = Paginator(records, 20).get_page(request.GET.get('page'))
     return render(request, 'staff/list.html', {'items': rows, 'section': section, 'title': title,
-        'singular': singular, 'query': query, 'state': state, 'has_publishing': section != 'values',
+        'singular': singular, 'query': query, 'state': state, 'has_publishing': section not in {'values', 'student-authors'},
         'can_add': request.user.has_perm(f'school.add_{model._meta.model_name}'),
         'can_change': request.user.has_perm(f'school.change_{model._meta.model_name}')})
 
@@ -117,7 +121,8 @@ def content_edit(request, section, pk=None):
     model, form_class, title, singular = content_config(section)
     require_permission(request, model, 'change' if pk else 'add')
     obj = get_object_or_404(model, pk=pk) if pk else None
-    form = form_class(request.POST if request.method == 'POST' else None, request.FILES or None, instance=obj)
+    form_options = {'can_add_author': request.user.has_perm('school.add_studentauthor')} if section == 'school-life' else {}
+    form = form_class(request.POST if request.method == 'POST' else None, request.FILES or None, instance=obj, **form_options)
     if request.method == 'POST' and form.is_valid():
         with transaction.atomic():
             record = form.save()
@@ -126,15 +131,17 @@ def content_edit(request, section, pk=None):
         return redirect('staff-edit', section=section, pk=record.pk)
     preview = None
     if obj and getattr(obj, 'published', False):
-        if section == 'articles' and obj.published_at <= timezone.now():
+        if section == 'school-life' and obj.published_at <= timezone.now():
+            preview = reverse('school-life-post', args=[obj.slug])
+        elif section == 'articles' and obj.published_at <= timezone.now():
             preview = reverse('article', args=[obj.slug])
         elif section == 'subjects':
             preview = reverse('subject', args=[obj.slug])
         elif section == 'departments':
             preview = reverse('school-department', args=[obj.pk])
         elif section == 'staff-profiles':
-            if obj.departments.filter(published=True).exists() or not obj.departments.exists():
-                preview = reverse('school-staff-profile', args=[obj.pk])
+            if obj.is_management or obj.departments.filter(published=True).exists() or not obj.departments.exists():
+                preview = reverse('school-staff-profile', kwargs={'slug': obj.slug})
         elif section == 'statistics' and obj.show_on_homepage:
             preview = reverse('home')
         elif section == 'events':
@@ -150,6 +157,9 @@ def content_delete(request, section, pk):
     model, form, title, singular = content_config(section)
     require_permission(request, model, 'delete')
     obj = get_object_or_404(model, pk=pk)
+    if section == 'student-authors' and obj.posts.exists():
+        messages.error(request, 'This author is credited on School Life posts. Reassign or remove those posts before deleting the author.')
+        return redirect('staff-edit', section=section, pk=obj.pk)
     if request.method == 'POST':
         with transaction.atomic():
             audit(request, obj, DELETION, f'{singular.title()} deleted in staff workspace.')
@@ -330,7 +340,7 @@ def editor_image_upload(request):
     from django.core.exceptions import ValidationError
     from django.http import JsonResponse
     from .security import validate_image
-    if not any(request.user.has_perm(f'school.{action}_{model}') for action in ['add', 'change'] for model in ['article', 'event', 'page', 'subject']):
+    if not any(request.user.has_perm(f'school.{action}_{model}') for action in ['add', 'change'] for model in ['article', 'event', 'page', 'subject', 'schoollifepost']):
         raise PermissionDenied
     upload = request.FILES.get('file')
     if not upload:

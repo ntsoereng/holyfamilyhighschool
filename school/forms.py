@@ -2,8 +2,34 @@ from django import forms
 from datetime import date
 from django.utils import timezone
 from .models import Application, SiteSettings, DISTRICT_CHOICES
+from .submissions import normalize_name, normalize_text
 
-class ApplicationForm(forms.ModelForm):
+class NormalizedPublicForm(forms.ModelForm):
+    name_fields = ()
+    multiline_fields = ()
+
+    def __init__(self, data=None, *args, **kwargs):
+        if data is not None:
+            data = data.copy()
+            for name in self.base_fields:
+                if name not in data or name == 'website':
+                    continue
+                value = data.get(name)
+                if isinstance(self.base_fields[name], forms.CharField):
+                    if name in self.name_fields:
+                        value = normalize_name(value)
+                    else:
+                        value = normalize_text(value, multiline=name in self.multiline_fields)
+                    if name == 'email':
+                        value = value.lower()
+                    data[name] = value
+        super().__init__(data, *args, **kwargs)
+
+
+class ApplicationForm(NormalizedPublicForm):
+    name_fields = ('given_name', 'surname', 'guardian_name')
+    multiline_fields = ('physical_address',)
+
     website = forms.CharField(required=False, widget=forms.HiddenInput)
     surname = forms.CharField(label='Your surname', max_length=80,
         widget=forms.TextInput(attrs={'autocomplete': 'family-name'}))
@@ -18,13 +44,14 @@ class ApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
         fields = ['surname', 'given_name', 'date_of_birth', 'physical_address', 'district', 'district_other',
-                  'current_school', 'guardian_name', 'phone', 'boarding_required', 'consent']
+                  'current_school', 'guardian_name', 'email', 'phone', 'boarding_required', 'consent']
         widgets = {'date_of_birth': forms.DateInput(attrs={'type': 'date', 'min': '1900-01-01'}),
                    'physical_address': forms.Textarea(attrs={'rows': 3, 'autocomplete': 'street-address'}),
                    'guardian_name': forms.TextInput(attrs={'autocomplete': 'name'}),
+                   'email': forms.EmailInput(attrs={'autocomplete': 'email'}),
                    'phone': forms.TextInput(attrs={'autocomplete': 'tel', 'inputmode': 'tel'})}
         labels = {'date_of_birth': 'Your date of birth', 'physical_address': 'Your physical address', 'guardian_name': 'Your parent or guardian’s full name',
-                  'phone': 'Your parent or guardian’s contact number',
+                  'phone': 'Your parent or guardian’s contact number', 'email': 'Your parent or guardian’s email address',
                   'consent': 'My parent or guardian agrees to the school using these details to process my application.'}
         help_texts = {'district_other': 'If you selected Other, enter your district or location.'}
 
@@ -68,7 +95,9 @@ class ApplicationForm(forms.ModelForm):
         return ''
 
 
-class ContactForm(forms.ModelForm):
+class ContactForm(NormalizedPublicForm):
+    name_fields = ('name',)
+    multiline_fields = ('message',)
     website = forms.CharField(required=False, widget=forms.HiddenInput)
     consent = forms.BooleanField(label='I agree that the school may use these details to respond to my enquiry.')
 

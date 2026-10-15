@@ -40,11 +40,62 @@ class PublicStaffBrowsingTests(TestCase):
         cls.unassigned = StaffMember.objects.create(title='School team member', published=True)
         cls.draft_unassigned = StaffMember.objects.create(title='Private unassigned draft', published=False)
 
+    def test_management_precedes_departments_and_respects_publication(self):
+        manager = StaffMember.objects.create(title='School principal', is_management=True, published=True)
+        manager.departments.add(self.hidden_department)
+        StaffMember.objects.create(title='Draft manager', is_management=True)
+        unassigned_manager = StaffMember.objects.create(title='Deputy principal', is_management=True, published=True)
+        response = self.client.get(reverse('school-staff'))
+        self.assertContains(response, 'School principal')
+        self.assertContains(response, 'Deputy principal', count=1)
+        self.assertNotContains(response, 'Draft manager')
+        self.assertLess(response.content.index(b'id="management-heading"'),
+                        response.content.index(b'Start with a department'))
+        self.assertNotIn(unassigned_manager, response.context['other_staff'])
+        self.assertEqual(self.client.get(self.profile_url(manager)).status_code, 200)
+        self.assertIn('is_management', StaffMemberForm().fields)
+
+    def test_management_card_has_role_without_biography_or_teaching_position(self):
+        member = StaffMember.objects.create(title='Our Principal', published=True, is_management=True,
+                                            management_role='principal', position='Classroom teacher',
+                                            biography='Detailed leadership biography.')
+        response = self.client.get(reverse('school-staff'))
+        self.assertContains(response, 'Principal')
+        self.assertNotContains(response, 'Detailed leadership biography.')
+        self.assertNotContains(response, 'Classroom teacher')
+        self.assertContains(response, self.profile_url(member))
+        self.assertContains(self.client.get(self.profile_url(member)), 'Detailed leadership biography.')
+
+    def test_profile_slugs_are_unique_stable_and_legacy_urls_redirect(self):
+        first = StaffMember.objects.create(title='Mary Example', published=True)
+        second = StaffMember.objects.create(title='Mary Example', published=True)
+        self.assertEqual(first.slug, 'mary-example')
+        self.assertEqual(second.slug, 'mary-example-2')
+        first.title = 'Mary Updated'
+        first.save()
+        self.assertEqual(first.slug, 'mary-example')
+        self.assertRedirects(self.client.get(reverse('school-staff-profile-legacy', kwargs={'pk': first.pk})),
+                             self.profile_url(first), status_code=301)
+        second.published = False
+        second.save()
+        self.assertEqual(self.client.get(reverse('school-staff-profile-legacy', kwargs={'pk': second.pk})).status_code, 404)
+
+    def test_management_role_is_required_only_for_management(self):
+        form = StaffMemberForm({'title': 'Principal', 'is_management': True})
+        self.assertFalse(form.is_valid())
+        self.assertIn('management_role', form.errors)
+        for role in ['principal', 'deputy-principal', 'head-of-department']:
+            form = StaffMemberForm({'title': 'Leader', 'is_management': True, 'management_role': role, 'order': 0})
+            self.assertTrue(form.is_valid(), form.errors)
+        form = StaffMemberForm({'title': 'Teacher', 'management_role': 'principal', 'order': 0})
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data['management_role'], '')
+
     def department_url(self, department):
         return reverse('school-department', kwargs={'pk': department.pk})
 
     def profile_url(self, member):
-        return reverse('school-staff-profile', kwargs={'pk': member.pk})
+        return reverse('school-staff-profile', kwargs={'slug': member.slug})
 
     def test_directory_starts_with_departments_and_published_member_counts(self):
         response = self.client.get(reverse('school-staff'))
@@ -118,7 +169,7 @@ class PublicStaffBrowsingTests(TestCase):
         ]:
             with self.subTest(member=member.title):
                 self.assertEqual(self.client.get(self.profile_url(member)).status_code, status)
-        self.assertEqual(self.client.get(reverse('school-staff-profile', kwargs={'pk': 999999})).status_code, 404)
+        self.assertEqual(self.client.get(reverse('school-staff-profile', kwargs={'slug': 'missing-person'})).status_code, 404)
 
     def test_revoking_last_public_department_hides_profile_without_revealing_drafts(self):
         self.sciences.published = False
@@ -204,7 +255,7 @@ class StaffProfileEditingTests(TestCase):
         self.assertEqual(member.date_from, date(2021, 8, 2))
         self.assertEqual(member.display_name, 'Ms. Mpho Example')
         self.assertEqual(list(member.departments.all()), [self.department])
-        response = self.client.get(reverse('school-staff-profile', kwargs={'pk': member.pk}))
+        response = self.client.get(reverse('school-staff-profile', kwargs={'slug': member.slug}))
         self.assertContains(response, member.image.url)
         self.assertContains(response, 'alt="Mpho in the school grounds"')
         self.assertContains(response, 'August 2021')

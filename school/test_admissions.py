@@ -53,7 +53,7 @@ class AdmissionApplicationTests(TestCase):
         )
         self.assertEqual(
             set(form.fields),
-            required_questions | {'physical_address', 'district_other', 'consent', 'website'},
+            required_questions | {'physical_address', 'district_other', 'email', 'consent', 'website'},
         )
         self.assertEqual(form.fields['given_name'].label, 'Your name')
         self.assertEqual(form.fields['current_school'].label, 'Your primary school')
@@ -110,7 +110,7 @@ class AdmissionApplicationTests(TestCase):
     def test_boarding_choices_are_saved_as_booleans(self):
         for answer, expected in [('no', False), ('yes', True)]:
             with self.subTest(answer=answer):
-                form = ApplicationForm(self.payload(boarding_required=answer), school=self.school)
+                form = ApplicationForm(self.payload(boarding_required=answer, given_name=f'Learner {answer}'), school=self.school)
                 self.assertTrue(form.is_valid(), form.errors)
                 application = form.save()
                 application.refresh_from_db()
@@ -128,9 +128,9 @@ class AdmissionApplicationTests(TestCase):
         application.full_clean()
         application.save()
         application.refresh_from_db()
-        self.assertEqual(application.learner_name, f'{given_name} {surname}')
-        self.assertEqual(application.surname, surname)
-        self.assertEqual(application.given_name, given_name)
+        self.assertEqual(application.learner_name, f'{given_name.title()} {surname.title()}')
+        self.assertEqual(application.surname, surname.title())
+        self.assertEqual(application.given_name, given_name.title())
 
     def test_malformed_choices_and_dates_are_rejected(self):
         for changes, expected_field in [
@@ -181,7 +181,7 @@ class AdmissionApplicationTests(TestCase):
         self.assertEqual(application.given_name, 'Lerato')
         self.assertEqual(application.entry_level, 'Grade 9')
         self.assertEqual(application.application_year, 2028)
-        self.assertEqual(application.email, '')
+        self.assertEqual(application.email, 'injected@example.com')
         self.assertEqual(application.message, '')
         self.assertIs(application.boarding_required, False)
 

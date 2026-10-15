@@ -1,1 +1,7 @@
-{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Access restricted · Holy Family</title><link rel="stylesheet" href="{% static 'css/site.css' %}"></head><body><main class="container reading-page"><p class="eyebrow">ACCESS RESTRICTED</p><h1>You don’t have access to this page.</h1><p>Contact the website administrator if your staff role needs to change.</p><a class="text-link" href="{% url 'staff-home' %}">Return to staff workspace</a><p><a href="{% url 'home' %}">School website</a></p></main></body></html>
+{% extends 'error_base.html' %}
+{% block error_title %}Access restricted · Holy Family High School{% endblock %}
+{% block error_description %}Access to this page is restricted. Contact the website administrator if your staff role needs to change.{% endblock %}
+{% block error_label %}ACCESS RESTRICTED{% endblock %}
+{% block error_heading %}You don’t have access to this page.{% endblock %}
+{% block error_message %}Contact the website administrator if your staff role needs to change.{% endblock %}
+{% block error_actions %}<a class="button" href="{% url 'staff-home' %}">Return to staff workspace</a><a class="text-link" href="{% url 'home' %}">School website</a>{% endblock %}

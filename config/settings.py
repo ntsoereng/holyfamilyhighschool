@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'school.middleware.IndexingHeadersMiddleware',
     'django.middleware.security.SecurityMiddleware', 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware',
+    'school.middleware.SubmissionSecurityMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'school.middleware.SecurityHeadersMiddleware', 'axes.middleware.AxesMiddleware',
@@ -181,3 +182,13 @@ LOGGING = {
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'root': {'handlers': ['console'], 'level': LOG_LEVEL},
 }
+
+# Shared SQL counters work across Passenger processes; never use per-process memory limits.
+FORM_WRITE_RATE_PER_MINUTE = config('FORM_WRITE_RATE_PER_MINUTE', default=120, cast=int)
+PUBLIC_FORM_RATE_PER_HOUR = config('PUBLIC_FORM_RATE_PER_HOUR', default=5, cast=int)
+PUBLIC_FORM_RATE_PER_DAY = config('PUBLIC_FORM_RATE_PER_DAY', default=20, cast=int)
+PUBLIC_FORM_MAX_BYTES = config('PUBLIC_FORM_MAX_BYTES', default=64 * 1024, cast=int)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = config('DJANGO_DATA_UPLOAD_MAX_NUMBER_FIELDS', default=500, cast=int)
+if min(FORM_WRITE_RATE_PER_MINUTE, PUBLIC_FORM_RATE_PER_HOUR, PUBLIC_FORM_RATE_PER_DAY,
+       PUBLIC_FORM_MAX_BYTES, DATA_UPLOAD_MAX_NUMBER_FIELDS) < 1:
+    raise ImproperlyConfigured('Form submission limits must be positive.')

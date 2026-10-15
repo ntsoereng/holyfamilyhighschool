@@ -12,15 +12,15 @@ class HomepageTests(TestCase):
     def setUp(self):
         self.site = SiteSettings.objects.create(hero_title='Learning for tomorrow', about_title='Our school community')
 
-    def test_about_link_and_image_are_independent_of_page_builder(self):
+    def test_removed_welcome_section_is_independent_of_page_builder(self):
         self.assertContains(self.client.get('/'), '/about/')
         self.site.about_image = 'school/about.png'
         self.site.about_image_alt = 'Our learners'
         self.site.save()
         Page.objects.create(title='Injected menu entry', slug='injected', introduction='Private', published=True)
         response = self.client.get('/')
-        self.assertContains(response, 'src="/media/school/about.png"')
-        self.assertContains(response, 'alt="Our learners"')
+        self.assertNotContains(response, 'src="/media/school/about.png"')
+        self.assertNotContains(response, 'alt="Our learners"')
         self.assertNotContains(response, 'Injected menu entry')
         self.assertNotContains(response, '/school/injected/')
 
@@ -49,4 +49,6 @@ class HomepageTests(TestCase):
         for text in ['Secret draft', 'Future article', 'Past gathering']:
             self.assertNotContains(response, text)
         self.assertContains(response, 'Learning for tomorrow')
-        self.assertContains(response, 'Our school community')
+        self.assertNotContains(response, 'Our school community')
+        self.assertLess(response.content.index(b'Upcoming dates'), response.content.index(b'Latest stories'))
+        self.assertNotContains(response, 'hero-invitation')

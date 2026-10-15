@@ -49,3 +49,32 @@
  .staff-login-card { min-width: 0; overflow-wrap: anywhere; }
  .staff-body .table-scroll { max-width: 100%; }
 }
+
+/* Collapsible workspace navigation; stays available when JavaScript is unavailable. */
+.staff-nav-group{display:flex;flex-direction:column;gap:4px;margin-top:20px}
+.staff-nav-label{padding:0 14px;margin:0 0 6px;color:#b7c9bc;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.staff-nav .icon,.staff-sidebar-bottom .icon{flex-shrink:0;width:19px;height:19px}
+.staff-sidebar-bottom a,.staff-sidebar-bottom button{display:flex;align-items:center;gap:12px}
+.staff-nav-toggle,.staff-nav-close{display:none;align-items:center;justify-content:center;gap:9px;border:1px solid #dce5df;border-radius:6px;padding:8px 12px;background:white;color:#174b3b;cursor:pointer;flex-shrink:0}
+.staff-nav-ready .staff-nav-toggle{display:inline-flex}
+.staff-topbar{align-items:center}
+.staff-nav-ready .staff-shell{display:block}
+.staff-nav-ready .staff-sidebar{position:fixed;inset:0 auto 0 0;width:260px;height:100dvh;z-index:70;transition:transform .25s ease; padding-top:54px}
+.staff-nav-ready .staff-main{margin-left:260px;transition:margin-left .25s ease}
+.staff-nav-ready .staff-nav-close{display:flex;position:absolute;top:12px;right:14px;background:transparent;border-color:#ffffff30;color:white;padding:6px}
+.staff-nav-ready.staff-nav-hidden .staff-sidebar{transform:translateX(-100%);visibility:hidden;transition:transform .25s ease,visibility .25s}
+.staff-nav-ready.staff-nav-hidden .staff-main{margin-left:0}
+.staff-nav-backdrop{position:fixed;inset:0;background:#071b16a6;border:0;z-index:60}
+.staff-nav-backdrop[hidden]{display:none}
+@media(max-width:760px){
+ .staff-nav-ready .staff-main{margin-left:0}
+ .staff-nav-ready .staff-sidebar{width:min(290px,88vw)}
+ .staff-nav-ready .staff-nav{flex-direction:column;flex-wrap:nowrap}
+ .staff-nav-ready .staff-nav a{padding:10px 14px;font-size:.875rem}
+ .staff-nav-ready .staff-nav .icon{display:block}
+ .staff-nav-ready .staff-sidebar-bottom{display:block;margin-top:auto;padding-top:24px}
+ .staff-nav-ready .staff-sidebar-bottom a,.staff-nav-ready .staff-sidebar-bottom button{padding:10px 14px}
+ .staff-nav-mobile-open{overflow:hidden}
+ .staff-topbar{gap:12px;flex-wrap:wrap}
+ .staff-topbar>span:last-child{margin-left:auto}
+}

@@ -117,7 +117,7 @@ class SearchMetadataTests(TestCase):
             self.assertNotIn('noindex', directive.lower())
         self.assertNotIn('noindex', response.get('X-Robots-Tag', '').lower())
 
-    def test_page_title_blocks_are_preserved_and_descriptions_use_page_content(self):
+    def test_page_titles_and_descriptions_use_page_content(self):
         for path, title, description in [
             ('/about/', f'About · {self.school.name}', self.school.about_intro),
             ('/curriculum/', f'Curriculum · {self.school.name}', self.school.curriculum_intro),
@@ -157,7 +157,7 @@ class SearchMetadataTests(TestCase):
             ('article', {'slug': self.article.slug}, self.article.image, self.article.excerpt),
             ('event', {'slug': self.event.slug}, self.event.image, 'Meet our school team.'),
             ('subject', {'slug': self.subject.slug}, self.subject.image, self.subject.introduction),
-            ('school-staff-profile', {'pk': self.member.pk}, self.member.image, self.member.biography),
+            ('school-staff-profile', {'slug': self.member.slug}, self.member.image, self.member.biography),
         ]:
             with self.subTest(route=route):
                 path = reverse(route, kwargs=kwargs)
@@ -283,7 +283,7 @@ class SearchDiscoveryTests(TestCase):
         urls = self.sitemap_urls(response)
         public_paths = {
             '/', '/about/', '/contact/', '/curriculum/', '/our-staff/', '/events/',
-            '/apply/', '/news/', '/privacy/',
+            '/apply/', '/news/', '/school-life/', '/privacy/',
             reverse('article', kwargs={'slug': self.article.slug}),
             reverse('event', kwargs={'slug': self.past_event.slug}),
             reverse('event', kwargs={'slug': self.future_event.slug}),
@@ -291,8 +291,8 @@ class SearchDiscoveryTests(TestCase):
             reverse('school-department', kwargs={'pk': self.department.pk}),
             reverse('school-department', kwargs={'pk': self.second_department.pk}),
             reverse('school-department', kwargs={'pk': self.empty_department.pk}),
-            reverse('school-staff-profile', kwargs={'pk': self.member.pk}),
-            reverse('school-staff-profile', kwargs={'pk': self.unassigned.pk}),
+            reverse('school-staff-profile', kwargs={'slug': self.member.slug}),
+            reverse('school-staff-profile', kwargs={'slug': self.unassigned.slug}),
         }
         self.assertEqual(set(urls), {SITE_URL + path for path in public_paths})
         self.assertEqual(len(urls), len(set(urls)))
@@ -302,8 +302,8 @@ class SearchDiscoveryTests(TestCase):
             reverse('event', kwargs={'slug': self.draft_event.slug}),
             reverse('subject', kwargs={'slug': self.draft_subject.slug}),
             reverse('school-department', kwargs={'pk': self.hidden_department.pk}),
-            reverse('school-staff-profile', kwargs={'pk': self.hidden_member.pk}),
-            reverse('school-staff-profile', kwargs={'pk': self.draft_member.pk}),
+            reverse('school-staff-profile', kwargs={'slug': self.hidden_member.slug}),
+            reverse('school-staff-profile', kwargs={'slug': self.draft_member.slug}),
             '/school/legacy-arbitrary/', '/staff/', '/admin/', '/apply/received/',
         ]:
             self.assertNotIn(SITE_URL + excluded_path, urls)

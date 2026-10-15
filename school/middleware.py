@@ -50,3 +50,53 @@ class SecurityHeadersMiddleware:
         if request.path.startswith(('/admin/', '/apply/', '/staff/', '/contact/')):
             response['Cache-Control'] = 'no-store, private'
         return response
+
+
+class SubmissionSecurityMiddleware:
+    """Bound all form writes before parsing; rate limits also count invalid/CSRF failures."""
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from django.http import HttpResponse
+        from django.core.exceptions import RequestDataTooBig
+        from .security import client_ip
+        from .submissions import consume_limit, rate_subject
+
+        def reject(message, status, retry=None):
+            response = HttpResponse(message, status=status, content_type='text/plain; charset=utf-8')
+            response['Cache-Control'] = 'no-store, private'
+            response['X-Robots-Tag'] = 'noindex, nofollow'
+            if retry:
+                response['Retry-After'] = str(retry)
+            return response
+
+        if request.method not in {'POST', 'PUT', 'PATCH', 'DELETE'}:
+            return self.get_response(request)
+        subject = rate_subject(client_ip(request))
+        public_form = request.path.rstrip('/') in {'/apply', '/contact'}
+        limits = [('all-form-writes', settings.FORM_WRITE_RATE_PER_MINUTE, 60)]
+        if public_form:
+            limits += [('public-forms-daily', settings.PUBLIC_FORM_RATE_PER_DAY, 86400),
+                       (f'public-form:{request.path.rstrip("/")}', settings.PUBLIC_FORM_RATE_PER_HOUR, 3600)]
+        for scope, limit, seconds in limits:
+            retry = consume_limit(subject, scope, limit, seconds)
+            if retry:
+                return reject('Too many submission attempts. Please wait before trying again, or contact the school office by phone.', 429, retry)
+        if public_form and request.method == 'POST':
+            try:
+                declared_size = int(request.META.get('CONTENT_LENGTH') or 0)
+                if declared_size < 0 or declared_size > settings.PUBLIC_FORM_MAX_BYTES:
+                    return reject('This form submission is too large.', 413)
+                if len(request.body) > settings.PUBLIC_FORM_MAX_BYTES:
+                    return reject('This form submission is too large.', 413)
+            except (ValueError, RequestDataTooBig):
+                return reject('This form submission is too large.', 413)
+            if request.content_type not in {'application/x-www-form-urlencoded', 'multipart/form-data'}:
+                return reject('Please submit using the school website form.', 415)
+            if request.FILES:
+                return reject('File uploads are not accepted by this form.', 400)
+            # Single-valued fields cannot be smuggled in as repeated parameters.
+            if any(len(values) != 1 for _, values in request.POST.lists()):
+                return reject('Please submit each form field only once.', 400)
+        return self.get_response(request)

@@ -53,7 +53,9 @@ class MonthlyCalendarTests(TestCase):
         self.assertContains(response, 'href="?year=2026&amp;month=11"')
         self.assertContains(response, 'href="?year=2026&amp;month=10"')
         self.assertContains(response, 'class="calendar-agenda"')
-        self.assertContains(response, 'Ask about an event')
+        self.assertNotContains(response, 'Ask about an event')
+        self.assertNotContains(response, 'Need to check a date?')
+        self.assertContains(response, 'data-calendar-upcoming')
         self.assertEqual(response.content.count(b'<h1'), 1)
         self.assertNotContains(response, 'style=')
         self.assertIn("script-src 'self'", response['Content-Security-Policy'])
@@ -81,6 +83,19 @@ class MonthlyCalendarTests(TestCase):
         self.assertTrue(cells[date(2026, 10, 1)]['entries'][0]['continues_before'])
         self.assertTrue(cells[date(2026, 10, 2)]['entries'][0]['is_last_day'])
         self.assertEqual([day['date'] for day in response.context['month_agenda']], [date(2026, 10, 1), date(2026, 10, 2)])
+
+    def test_compact_dates_link_to_readable_agenda_with_location(self):
+        event = self.event('school-assembly', self.local(2026, 10, 12, 8, 30))
+        response = self.client.get('/events/?year=2026&month=10')
+        self.assertContains(response, 'href="#calendar-day-2026-10-12"')
+        self.assertContains(response, 'id="calendar-day-2026-10-12"')
+        self.assertContains(response, 'calendar-event-dot')
+        self.assertContains(response, 'calendar-entry-location')
+        self.assertContains(response, 'School hall')
+        self.assertContains(response, '/events/school-assembly/')
+        self.assertNotContains(response, 'Scroll across')
+        self.assertNotContains(response, 'Ask about an event')
+        self.assertNotContains(response, 'Need to check a date?')
 
     def test_midnight_end_is_exclusive_and_does_not_add_a_day(self):
         event = self.event('sports-weekend', self.local(2026, 10, 1, 9), self.local(2026, 10, 4, 0))

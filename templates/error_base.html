@@ -1,0 +1,9 @@
+{% load static %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="{% block error_description %}Return to Holy Family High School to find school information.{% endblock %}"><title>{% block error_title %}Holy Family High School{% endblock %}</title><link rel="stylesheet" href="{% static 'css/fonts.css' %}"><link rel="stylesheet" href="{% static 'css/site.css' %}"></head>
+<body class="public-site"><main class="container error-page" id="main">
+<a class="error-brand" href="{% url 'home' %}"><img src="{% static 'images/holy-family-original.png' %}" alt="" width="48" height="48"><span>Holy Family High School</span></a>
+<p class="eyebrow">{% block error_label %}PLEASE TRY AGAIN{% endblock %}</p>
+<h1>{% block error_heading %}We couldn’t load this page.{% endblock %}</h1>
+<p class="lead">{% block error_message %}Please try again shortly.{% endblock %}</p>
+<div class="hf-action-row">{% block error_actions %}<a class="button" href="{% url 'home' %}">Return home</a>{% endblock %}</div>
+</main></body></html>

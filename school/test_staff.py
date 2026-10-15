@@ -91,14 +91,14 @@ class StaffWorkspaceTests(TestCase):
     def test_content_create_edit_delete_and_audit(self):
         self.client.force_login(self.editor)
         response = self.client.post('/staff/content/articles/new/', self.article_data())
-        article = Article.objects.get(slug='updated')
+        article = Article.objects.get(slug='updated-article')
         self.assertRedirects(response, f'/staff/content/articles/{article.pk}/')
         self.assertFalse(article.published)
-        self.assertEqual(self.client.get('/news/updated/').status_code,404)
+        self.assertEqual(self.client.get('/news/updated-article/').status_code,404)
         response = self.client.post(f'/staff/content/articles/{article.pk}/', self.article_data(published='on', body='<script>bad()</script><p>Safe</p>'))
         article.refresh_from_db()
         self.assertNotIn('<script', article.body)
-        self.assertContains(self.client.get('/news/updated/'), '<p>Safe</p>')
+        self.assertContains(self.client.get('/news/updated-article/'), '<p>Safe</p>')
         self.assertTrue(LogEntry.objects.filter(user=self.editor, object_id=str(article.pk), action_flag=2).exists())
         path = f'/staff/content/articles/{article.pk}/delete/'
         self.assertEqual(self.client.get(path).status_code,200)
@@ -107,16 +107,16 @@ class StaffWorkspaceTests(TestCase):
         self.assertFalse(Article.objects.filter(pk=article.pk).exists())
         self.assertTrue(LogEntry.objects.filter(user=self.editor, action_flag=3).exists())
 
-    def test_scheduled_article_hidden_and_duplicate_slug_reported(self):
+    def test_scheduled_article_hidden_and_duplicate_titles_get_unique_slugs(self):
         self.client.force_login(self.editor)
         response = self.client.post('/staff/content/articles/new/', self.article_data(published='on', published_at='2099-01-01T10:00'))
         self.assertEqual(response.status_code,302)
-        self.assertEqual(self.client.get('/news/updated/').status_code,404)
+        self.assertEqual(self.client.get('/news/updated-article/').status_code,404)
         self.assertContains(self.client.get('/staff/content/articles/'), 'Scheduled')
         response = self.client.post('/staff/content/articles/new/', self.article_data())
-        self.assertEqual(response.status_code,200)
-        self.assertContains(response, 'already exists')
-        self.assertEqual(Article.objects.filter(slug='updated').count(),1)
+        self.assertEqual(response.status_code,302)
+        self.assertTrue(Article.objects.filter(slug='updated-article').exists())
+        self.assertTrue(Article.objects.filter(slug='updated-article-2').exists())
 
     def test_events_and_values(self):
         self.client.force_login(self.editor)
@@ -139,12 +139,16 @@ class StaffWorkspaceTests(TestCase):
         from .staff_forms import SettingsForm
         data = {name: getattr(self.site, name) for name in SettingsForm._meta.fields if not isinstance(self.site._meta.get_field(name), models.ImageField)}
         data['hero_title'] = 'A staff-managed homepage'
+        data['about_history'] = '<p>History saved on the first submission.</p>'
+        data['curriculum_body'] = '<p>Curriculum saved on the first submission.</p>'
         buffer = BytesIO()
         Image.new('RGB',(20,20)).save(buffer,format='PNG')
         data['logo'] = SimpleUploadedFile('crest.png',buffer.getvalue(),content_type='image/png')
         self.assertRedirects(self.client.post('/staff/settings/',data),'/staff/settings/')
         self.site.refresh_from_db()
         self.assertTrue(self.site.logo)
+        self.assertEqual(self.site.about_history, data['about_history'])
+        self.assertEqual(self.site.curriculum_body, data['curriculum_body'])
         self.assertContains(self.client.get('/'), 'A staff-managed homepage')
         data['logo'] = SimpleUploadedFile('bad.png',b'<script>bad</script>',content_type='image/png')
         self.assertEqual(self.client.post('/staff/settings/',data).status_code,200)

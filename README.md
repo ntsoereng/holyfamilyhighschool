@@ -79,7 +79,7 @@ Staff (`/our-staff/`) begins with published departments. Open a department for l
 
 ### Admissions
 
-The native application form follows the school's [Grade 8 2027 Google Form](https://docs.google.com/forms/d/e/1FAIpQLSeFREgd9piREXFBs1W1IsD77Cb10oEyeMpXl5Q00s5_Xdydzw/viewform): surname, name, date of birth, optional physical address, district (including Other), primary school, parent/guardian name and contacts, and a required Yes/No boarding preference. Guardian consent is also required. Email and a message are no longer requested. Applications are saved in the private staff inbox; submission does not send data to Google.
+The native application form follows the school's [Grade 8 2027 Google Form](https://docs.google.com/forms/d/e/1FAIpQLSeFREgd9piREXFBs1W1IsD77Cb10oEyeMpXl5Q00s5_Xdydzw/viewform): surname, name, date of birth, optional physical address, district (including Other), primary school, parent/guardian name and contacts, and a required Yes/No boarding preference. Guardian consent is also required. Guardian email is optional; a free-form message is not requested. Applications are saved in the private staff inbox; submission does not send data to Google.
 
 School settings contains editable admission grade/year, the M50.00 non-refundable fee, M-pesa merchant 5184, the 14 October 2026 deadline, and the 17 October 2026 interview at 08:00 local school time. Interview subjects and stationery instructions are editable too. Update these settings for subsequent intakes and use Admissions open to control acceptance. Each new application records the configured grade and year when submitted; changing the intake later preserves that record. Existing submissions retain their names, contact details, messages and review status.
 
@@ -141,3 +141,41 @@ Forwarding headers remain untrusted by default. Enable `DJANGO_TRUST_X_FORWARDED
 Runtime values are read with `python-decouple` and retain typed defaults when omitted: language/time zone, localization, login lockout limits, password minimum length, session lifetime and cookie settings, security headers, and upload memory/file-count limits. `.env.example` and `.env.production.example` list the environment names. The real root `.env` retains the existing secret under `DJANGO_SECRET_KEY`; credentials remain private. Production guards continue to reject unsafe values. PyMySQL is registered as `MySQLdb` in `config/__init__.py` for Django’s MySQL backend.
 
 The fixed-page migration preserves history, mission, vision, introductions and header images from legacy About, Curriculum and Staff page records in School settings. Legacy records are retained as an archive; page creation, layout selection, publication and navigation controls are no longer exposed. Existing `/school/about/`, `/school/curriculum/` and `/school/our-staff/` links remain valid. Other legacy pages are outside this initial page set. Run `python manage.py migrate` when deploying these changes.
+
+
+### Form submissions and duplicate applications
+
+All form writes (including staff/admin forms) share an atomic SQL-backed limit of 120 writes per IP per minute. Public contact and admission forms additionally allow 5 attempts per form per hour and 20 combined attempts per day. Invalid forms, honeypots and CSRF failures count too. Limits return HTTP 429 with Retry-After; blocked requests do not create unbounded attempt rows. IPv6 clients share a /64 allowance. IP subjects are stored as keyed hashes; forwarding headers are never trusted. Configure FORM_WRITE_RATE_PER_MINUTE, PUBLIC_FORM_RATE_PER_HOUR and PUBLIC_FORM_RATE_PER_DAY for real school traffic, especially shared school/mobile networks.
+
+Public submissions accept at most 64 KiB (PUBLIC_FORM_MAX_BYTES), no files, no repeated parameters, and only normal browser form content types. DJANGO_DATA_UPLOAD_MAX_NUMBER_FIELDS defaults to 500 for all forms. Keep the existing CSRF, honeypot, field-length, consent and image validation protections. Run purge_submission_attempts daily to remove expired counters and historical attempt logs. Apply request-size/connection limits and DDoS protection at Apache or the upstream proxy as well; application limits do not replace network controls.
+
+Names use Unicode-aware title case; email is lowercase, whitespace is trimmed/collapsed, and hidden control characters are removed. The unique applicant key covers normalized given name, surname, birth date, intake year and grade, independent of guardian email/phone. Simultaneous submissions are rejected by the database constraint, with a useful conflict message and no disclosure of an existing reference. Siblings and later intakes remain allowed. Existing duplicates are preserved; the earliest complete record owns the duplicate key. Incomplete historical identities are not guessed or merged.
+
+New references use HFHS-<intake year>-<24 random uppercase hex characters>, generated with cryptographic randomness rather than personal details or a sequential ID. References are unique, searchable by staff and shown only on the session-protected receipt. Previously issued UUID references remain valid and unchanged. Apply migration 0015 before restarting the application.
+
+
+### School Life and student writing
+
+Community in the public navigation contains general News and School Life. School Life is separate from official news and publishes student stories, poems and articles at `/school-life/<readable-title>/`. Category filters and pagination preserve the selected category. Only published posts whose publication time has arrived appear publicly, in metadata or in the sitemap.
+
+Content editors manage School Life and reusable Student authors under Community in the staff workspace. Select a saved student author, or leave that selection blank and enter a new student name and grade in the author section of a post. No student login is created. Each post saves its name/grade credit so later grade changes do not rewrite older writing; choosing a different author updates the credit. Credited authors cannot be deleted while posts refer to them. Migration 0016 adds these permissions to the existing Content editors group without removing other permissions. New installations continue to use `python manage.py setup_staff_groups`. Existing general news and source material are preserved; no writing is automatically attributed to a student.
+
+The public mobile menu animates open and closed, closes on outside click/Escape/link selection, prevents focus entering hidden links, and resets correctly at the desktop breakpoint. Navigation remains available without JavaScript and reduced-motion preferences disable transitions. School Life uses soft forest/gold gradients, restrained card transitions, readable article widths and a separate author credit beneath each piece.
+
+
+### Automatic content addresses
+
+Articles, events, subjects, staff profiles and School Life posts generate unique readable slugs on first save. Editors do not enter slugs. Duplicate titles/names receive numeric suffixes, and the database constraint plus retry handles concurrent writers. Long titles are shortened to fit the field, and titles without usable ASCII characters receive a safe fallback. Existing addresses are preserved on title/name edits. Administrator views display generated slugs as read-only. Migration 0017 fills any previously blank content slugs without rewriting existing addresses, including archived page records. Direct imports can still supply an existing slug to preserve legacy links; normal model saves provide automatic generation when it is absent.
+
+
+### Public navigation and search metadata
+
+Detail pages link back to News, the calendar, Curriculum, the staff directory or School Life. News page numbers and School Life category/page selections survive the round trip. Calendar details return to the event’s local month. Return destinations are constructed from known routes and validated list parameters. Header links mark their parent section on detail pages; the footer groups School, Community and Contact links. Repeated cross-page action banners were removed to keep reading flows focused.
+
+One metadata provider supplies HTML titles, descriptions, Open Graph/Twitter previews and canonical URLs. Optional or HTML-only content receives a meaningful page-specific description; paginated/category lists receive distinct titles and descriptions. Tracking/return parameters are excluded from detail canonicals. This follows Google’s guidance on [page-specific descriptions](https://developers.google.com/search/docs/appearance/snippet) and [canonical URLs in sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap).
+
+`/sitemap.xml` includes primary pages and visible published details, with scheduled writing excluded until publication. `/robots.txt` advertises that sitemap in production and excludes staff/admin/editor/receipt paths. DEBUG or preview mode intentionally disables indexing and returns an empty sitemap. Set the real HTTPS SITE_URL, use production settings, and disable website preview before launch. Error pages and private receipts remain noindex. Public pages support GET/HEAD; reading a receipt with HEAD does not consume it.
+
+Regression checks in `school.test_public_sweep` crawl internal links and anchors, verify public metadata and HEAD responses, exercise list/detail return paths, and validate sitemap/robots visibility rules.
+
+The calendar uses a shorter header and tighter month cells. On phones, the seven-column grid fits the viewport; marked dates link to the agenda below, where titles, local times and locations remain readable. Upcoming dates collapse by default on phones and remain expanded on larger screens; the native disclosure still works without JavaScript. Repeated contact prompts and event “View details” labels were removed from the calendar, while event cards remain clickable.

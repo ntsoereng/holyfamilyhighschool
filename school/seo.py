@@ -1,7 +1,7 @@
 """Public metadata uses the configured school origin, never the request host."""
 from html import unescape
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlencode
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -11,11 +11,11 @@ from django.urls import reverse
 from django.utils.text import Truncator
 from django.utils.html import strip_tags
 
-from .models import Article, Department, Event, SiteSettings, StaffMember, Subject
+from .models import Article, Department, Event, SiteSettings, StaffMember, Subject, SchoolLifePost
 
 
-PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'privacy')
-PUBLIC_DETAIL_PAGES = ('article', 'event', 'subject', 'school-department', 'school-staff-profile')
+PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy')
+PUBLIC_DETAIL_PAGES = ('article', 'event', 'subject', 'school-department', 'school-staff-profile', 'school-life-post')
 LEGACY_PAGES = {'about': 'about', 'about-us': 'about', 'curriculum': 'curriculum',
                 'our-staff': 'school-staff', 'staff': 'school-staff'}
 
@@ -47,12 +47,16 @@ def indexing_enabled(request):
 
 def public_staff():
     return StaffMember.objects.filter(published=True).filter(
-        Q(departments__published=True) | Q(departments__isnull=True)).distinct()
+        Q(is_management=True) | Q(departments__published=True) | Q(departments__isnull=True)).distinct()
 
 
 def plain_description(value):
     text = re.sub(r'\s+', ' ', strip_tags(unescape(str(value or '')))).strip()
     return Truncator(text).chars(160)
+
+
+def first_description(*values):
+    return next((text for value in values if (text := plain_description(value))), '')
 
 
 def absolute_url(path):
@@ -74,59 +78,97 @@ def metadata(request):
 
     pages = {
         'home': (school.name, school.hero_text, school.hero_image, school.hero_image_alt),
-        'about': (f'About · {school.name}', school.about_intro or school.about_text, school.about_image, school.about_image_alt),
+        'about': (f'About · {school.name}', first_description(school.about_intro, school.about_text), school.about_image, school.about_image_alt),
         'contact': (f'Contact · {school.name}', school.contact_text, school.contact_image, school.contact_image_alt),
         'curriculum': (f'Curriculum · {school.name}', school.curriculum_intro, school.curriculum_image, school.curriculum_image_alt),
         'school-staff': (f'Our staff · {school.name}', school.staff_intro, school.staff_image, school.staff_image_alt),
         'events': (f'Calendar · {school.name}', school.calendar_intro, school.calendar_image, school.calendar_image_alt),
         'apply': (f'Admissions · {school.name}', school.admissions_text, school.admissions_image, school.admissions_image_alt),
-        'news': (f'News & stories · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
+        'school-life': ('School Life · ' + school.name, f'Stories, poems and articles by students at {school.name}.', None, ''),
+        'news': (f'News · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
+        'application-success': (f'Application received · {school.name}', 'Your application has been received. Keep your private reference for follow-up with the school office.', None, ''),
         'privacy': (f'Privacy · {school.name}', school.privacy_text, None, ''),
     }
+    fallbacks = {
+        'home': f'Explore learning, admissions, school life and community updates at {school.name}.',
+        'about': f'Learn about the history, purpose and community of {school.name}.',
+        'curriculum': f'Explore the subjects and learning opportunities at {school.name}.',
+        'school-staff': f'Meet the school management, departments and staff at {school.name}.',
+        'events': f'Explore events and important dates in the {school.name} school calendar.',
+        'apply': f'Find admission information and submit an application to {school.name}.',
+        'contact': f'Contact {school.name} with enquiries about admissions, learning and school life.',
+        'privacy': f'How {school.name} handles personal information supplied through applications and enquiries.',
+    }
     title, description, image, image_alt = pages.get(route, (school.name, '', None, ''))
+    description = first_description(description, fallbacks.get(route))
     public = route in PRIMARY_PAGES
     path = reverse(route) if public else ''
     og_type = 'website'
     published_at = None
 
     item = None
-    if route == 'article':
+    if route == 'school-life-post':
+        item = SchoolLifePost.objects.live().filter(slug=kwargs.get('slug')).first()
+        if item:
+            description = first_description(item.excerpt, item.body, f'Read {item.title}, a {item.get_category_display().lower()} by {item.author_name} at {school.name}.')
+            og_type, published_at = 'article', item.published_at
+    elif route == 'article':
         item = Article.objects.live().filter(slug=kwargs.get('slug')).first()
         if item:
-            description = item.excerpt or item.body
+            description = first_description(item.excerpt, item.body, f'Read {item.title}, news from {school.name}.')
             og_type, published_at = 'article', item.published_at
     elif route == 'event':
         item = Event.objects.filter(published=True, slug=kwargs.get('slug')).first()
         if item:
-            description = item.description or f'{item.title} at {item.location}.'
+            description = first_description(item.description, f'{item.title} at {item.location}, {school.name}.')
     elif route == 'subject':
         item = Subject.objects.filter(published=True, slug=kwargs.get('slug')).first()
         if item:
-            description = item.introduction or item.body or school.curriculum_intro
+            description = first_description(item.introduction, item.body, f'Explore {item.title} and learning at {school.name}.')
     elif route == 'school-department':
         item = Department.objects.filter(published=True, pk=kwargs.get('pk')).first()
         if item:
-            description = item.description or school.staff_intro
+            description = first_description(item.description, f'Meet the {item.title} department and its staff at {school.name}.')
     elif route == 'school-staff-profile':
-        item = public_staff().filter(pk=kwargs.get('pk')).first()
+        item = public_staff().filter(slug=kwargs.get('slug')).first()
         if item:
-            description = item.biography or item.position or school.staff_intro
+            description = first_description(item.biography, f'{item.display_name}, {item.get_management_role_display() if item.is_management and item.management_role else item.position or "staff member"} at {school.name}.')
 
     if item:
         public = True
-        title = f'{item.display_name if isinstance(item, StaffMember) else item.title} · {school.name}'
+        section_title = ' · Our staff' if route in {'school-staff-profile', 'school-department'} else ' · School Life' if route == 'school-life-post' else ''
+        title = f'{item.display_name if isinstance(item, StaffMember) else item.title}{section_title} · {school.name}'
         image = getattr(item, 'image', None)
         image_alt = getattr(item, 'image_alt', '')
         path = reverse(route, kwargs=kwargs)
     elif route in PUBLIC_DETAIL_PAGES:
         public = False
 
-    if route == 'news':
-        page_number = Paginator(Article.objects.live(), 9).get_page(request.GET.get('page')).number
+    if route in {'news', 'school-life'}:
+        posts = SchoolLifePost.objects.live() if route == 'school-life' else Article.objects.live()
+        query = {}
+        category = request.GET.get('category', '')
+        if route == 'school-life' and category in dict(SchoolLifePost._meta.get_field('category').choices):
+            posts = posts.filter(category=category)
+            query['category'] = category
+        page_number = Paginator(posts, 9).get_page(request.GET.get('page')).number
+        if 'category' in query:
+            label = {'story': 'Stories', 'poem': 'Poems', 'article': 'Articles'}[category]
+            title = f'{label} · School Life · {school.name}'
+            description = f'{label} by students at {school.name}.'
         if page_number > 1:
-            path += f'?page={page_number}'
+            query['page'] = page_number
+            title = title.removesuffix(' · ' + school.name) + f' · Page {page_number} · {school.name}'
+            suffix = f' Page {page_number}.'
+            description = Truncator(description).chars(160 - len(suffix)) + suffix
+        if query:
+            path += '?' + urlencode(query)
 
+    parent = {'article': 'news', 'school-life-post': 'school-life', 'subject': 'curriculum',
+              'school-department': 'school-staff', 'school-staff-profile': 'school-staff', 'event': 'events'}.get(route, route)
+    section = 'school' if parent in {'about', 'curriculum', 'school-staff'} else 'community' if parent in {'news', 'school-life'} else parent
     return {'seo': {
+        'parent': parent, 'section': section,
         'title': title,
         'description': plain_description(description),
         'canonical': absolute_url(path) if public else '',

@@ -135,15 +135,15 @@ class LearnerFacingCopyTests(TestCase):
             with self.subTest(field=field):
                 self.assertEqual(getattr(fresh, field), expected)
 
-    def test_home_has_learner_invitation_without_old_hero_pills_overlay_or_shared_banner(self):
+    def test_home_has_focused_actions_without_decorative_taglines(self):
         self.school.hero_image = 'school/hero.png'
         self.school.hero_image_alt = 'Learners in the school grounds'
         self.school.save()
         response = self.client.get('/')
-        for text in ['Your curiosity. Your character. Your next chapter.', 'Get to know Holy Family',
-                     'What would you like to explore?', 'Start your application', 'Learners in the school grounds']:
+        for text in ['Get to know Holy Family', 'Upcoming dates',
+                     'Start your application', 'Learners in the school grounds']:
             self.assertContains(response, text)
-        for obsolete in ['hero-tagline', 'hero-points', 'hero-caption', 'class="admissions-band"']:
+        for obsolete in ['Your curiosity. Your character. Your next chapter.', 'What would you like to explore?', 'hero-image-note', 'hero-tagline', 'hero-points', 'hero-caption', 'class="admissions-band"']:
             self.assertNotContains(response, obsolete)
         self.assertContains(response, self.school.hero_image.url)
         self.assertEqual(response.content.count(b'<h1'), 1)

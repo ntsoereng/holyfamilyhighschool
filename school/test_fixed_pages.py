@@ -111,3 +111,20 @@ class FixedPageTests(TestCase):
         self.assertContains(response, f'href="{department_url}"')
         self.assertContains(self.client.get(department_url), 'Demo Teacher')
         self.assertNotContains(self.client.get('/our-staff/'), 'Private profile')
+
+    def test_about_omits_unset_principles_and_shows_configured_content(self):
+        from .models import SchoolValue
+        response = self.client.get('/about/')
+        for marker in ['hf-vision-card', 'hf-values-card', 'hf-mission-card', 'WHAT SHAPES OUR SCHOOL']:
+            self.assertNotContains(response, marker)
+        self.site.about_vision = 'Our approved vision.'
+        self.site.save()
+        response = self.client.get('/about/')
+        self.assertContains(response, 'Our approved vision.')
+        self.assertNotContains(response, 'hf-values-card')
+        self.site.about_vision = ''
+        self.site.save()
+        SchoolValue.objects.create(title='Care', description='We care for our community.')
+        response = self.client.get('/about/')
+        self.assertContains(response, 'We care for our community.')
+        self.assertNotContains(response, 'hf-vision-card')
