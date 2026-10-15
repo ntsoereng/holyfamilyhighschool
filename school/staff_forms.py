@@ -1,7 +1,8 @@
-from .roles import STAFF_ROLE_CHOICES
+from .roles import STAFF_ROLE_CHOICES, ensure_staff_groups
+from django.db import transaction
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost, ENTRY_LEVEL_CHOICES
 from .security import normalize_google_maps_embed
@@ -118,20 +119,15 @@ class StaffUserCreationForm(UserCreationForm):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
 
-    def clean_role(self):
-        role = self.cleaned_data['role']
-        required = ['Content editors', 'Admissions officers'] if role == 'both' else [role]
-        if Group.objects.filter(name__in=required).count() != len(required):
-            raise ValidationError('Staff roles are not configured. Run setup_staff_groups first.')
-        return role
-
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_staff = True
         if commit:
-            user.save()
-            names = ['Content editors', 'Admissions officers'] if self.cleaned_data['role'] == 'both' else [self.cleaned_data['role']]
-            user.groups.set(Group.objects.filter(name__in=names))
+            with transaction.atomic():
+                groups = ensure_staff_groups()
+                user.save()
+                names = ['Content editors', 'Admissions officers'] if self.cleaned_data['role'] == 'both' else [self.cleaned_data['role']]
+                user.groups.set([groups[name] for name in names])
         return user
 
 

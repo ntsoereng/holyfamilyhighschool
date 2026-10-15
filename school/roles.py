@@ -31,3 +31,24 @@ STAFF_ROLES = (
 STAFF_ROLE_CHOICES = tuple((role['name'], role['label']) for role in STAFF_ROLES) + (
     ('both', 'Content editor and school office'),
 )
+
+
+def ensure_staff_groups(*, synchronise=False):
+    """Provision standard access; only explicit setup removes custom grants."""
+    from django.contrib.auth.models import Group, Permission
+    from django.db import transaction
+
+    groups = {}
+    with transaction.atomic():
+        for role in STAFF_ROLES:
+            group, _ = Group.objects.get_or_create(name=role['name'])
+            permissions = Permission.objects.filter(
+                content_type__app_label='school', content_type__model__in=role['models'],
+                codename__in=[f'{action}_{model}' for model in role['models']
+                              for action in ('view', 'add', 'change', 'delete')])
+            if synchronise:
+                group.permissions.set(permissions)
+            else:
+                group.permissions.add(*permissions)
+            groups[role['name']] = group
+    return groups
