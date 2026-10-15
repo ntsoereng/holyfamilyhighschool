@@ -120,6 +120,8 @@ def contact(request):
 @require_safe
 def privacy(request): return render(request, 'school/privacy.html')
 
+def terms(request): return render(request, 'school/terms.html')
+
 @require_http_methods(['GET', 'HEAD', 'POST'])
 def apply(request):
     school = SiteSettings.objects.first() or SiteSettings(email=settings.CONTACT_EMAIL, phone=settings.CONTACT_PHONE)

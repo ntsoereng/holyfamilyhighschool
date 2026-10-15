@@ -799,4 +799,17 @@
     .public-site .footer-bottom > .footer-legal { align-items: flex-start; flex-direction: column; gap: 10px; }
   }
   @media (max-width: 480px) { .public-site .footer-grid { gap: 20px 24px; } }
+
+  .public-site .legal-page { max-width: 940px; }
+  .public-site .legal-page .prose h2 { scroll-margin-top: 110px; font-size: clamp(1.25rem, 3vw, 1.6rem); margin-top: 36px; }
+  .public-site .legal-page .prose p, .public-site .legal-page .prose li { overflow-wrap: anywhere; }
+  .public-site .legal-contents { display: flex; flex-wrap: wrap; gap: 10px 20px; padding: 20px; margin-block: 24px 32px; background: #174b3b06; border: 1px solid #174b3b15; border-radius: 12px; font-size: .84rem; }
+  .public-site .legal-contents strong { flex-basis: 100%; }
+  .public-site .legal-contents a { text-decoration: underline; text-underline-offset: 4px; }
+  .public-site .legal-table { overflow-x: auto; margin-block: 24px; }
+  .public-site .legal-page .legal-table table { display: table; width: 100%; font-size: .85rem; border-collapse: collapse; }
+  .public-site .legal-table th, .public-site .legal-table td { text-align: left; vertical-align: top; padding: 12px; border: 1px solid #dce5df; }
+  .public-site .legal-table th { background: #174b3b06; }
+  .public-site .legal-page code { overflow-wrap: anywhere; }
+  .public-site .legal-related { display: flex; flex-wrap: wrap; gap: 16px 28px; border-top: 1px solid #dce5df; padding-top: 24px; margin-top: 36px; }
 }

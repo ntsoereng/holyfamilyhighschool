@@ -14,7 +14,7 @@ from django.utils.html import strip_tags
 from .models import Article, Department, Event, SiteSettings, StaffMember, Subject, SchoolLifePost
 
 
-PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy')
+PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy', 'terms')
 PUBLIC_DETAIL_PAGES = ('article', 'event', 'subject', 'school-department', 'school-staff-profile', 'school-life-post')
 LEGACY_PAGES = {'about': 'about', 'about-us': 'about', 'curriculum': 'curriculum',
                 'our-staff': 'school-staff', 'staff': 'school-staff'}
@@ -87,7 +87,8 @@ def metadata(request):
         'school-life': ('School Life · ' + school.name, f'Stories, poems and articles by students at {school.name}.', None, ''),
         'news': (f'News · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
         'application-success': (f'Application received · {school.name}', 'Your application has been received. Keep your private reference for follow-up with the school office.', None, ''),
-        'privacy': (f'Privacy · {school.name}', school.privacy_text, None, ''),
+        'privacy': (f'Privacy Policy · {school.name}', f'How {school.name} uses personal information, protects learner data and handles cookies under Lesotho’s data protection law.', None, ''),
+        'terms': (f'Terms of Use · {school.name}', f'Terms for using the {school.name} website, submitting applications and enquiries, and sharing school and student content.', None, ''),
     }
     fallbacks = {
         'home': f'Explore learning, admissions, school life and community updates at {school.name}.',

@@ -283,7 +283,7 @@ class SearchDiscoveryTests(TestCase):
         urls = self.sitemap_urls(response)
         public_paths = {
             '/', '/about/', '/contact/', '/curriculum/', '/our-staff/', '/events/',
-            '/apply/', '/news/', '/school-life/', '/privacy/',
+            '/apply/', '/news/', '/school-life/', '/privacy/', '/terms/',
             reverse('article', kwargs={'slug': self.article.slug}),
             reverse('event', kwargs={'slug': self.past_event.slug}),
             reverse('event', kwargs={'slug': self.future_event.slug}),
