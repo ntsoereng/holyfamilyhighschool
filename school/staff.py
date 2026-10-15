@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
+from .roles import STAFF_ROLES
 from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost
 from .staff_forms import (StaffAuthenticationForm, ArticleForm, EventForm, ValueForm,
                           SettingsForm, ApplicationReviewForm, StaffUserCreationForm, ContactReviewForm, DepartmentForm, StaffMemberForm, SubjectForm, StatisticForm, StudentAuthorForm, SchoolLifePostForm)
@@ -262,7 +263,7 @@ def team(request):
             audit(request, user, ADDITION, 'Staff account created in staff workspace.')
         messages.success(request, 'Staff account created. Share the credentials securely with the staff member.')
         return redirect('staff-team')
-    return render(request, 'staff/team.html', {'form': form, 'staff_members': User.objects.filter(is_staff=True).prefetch_related('groups')})
+    return render(request, 'staff/team.html', {'form': form, 'role_guide': STAFF_ROLES, 'staff_members': User.objects.filter(is_staff=True).prefetch_related('groups')})
 
 
 @require_POST

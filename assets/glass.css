@@ -75,4 +75,14 @@
     .public-site :is(.hf-card, .article-card, .subject-card, .staff-profile-card, .hf-department-card, .event-row, .calendar-board, .contact-form-panel, .application-form, .legal-contents),
     .staff-body :is(.staff-panel, .staff-stats a, .staff-login-card) { background: Canvas; color: CanvasText; border: 1px solid CanvasText; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   }
+
+  .staff-body .staff-role-guide > p { color: #52685c; font-size: .88rem; }
+  .staff-body .staff-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-block: 20px; }
+  .staff-body .staff-role-card { min-width: 0; padding: 20px; border: 1px solid #174b3b1a; border-radius: 12px; background: #ffffff70; font-size: .86rem; line-height: 1.7; }
+  .staff-body .staff-role-card h3 { display: flex; align-items: center; gap: 10px; font-size: .95rem; margin-bottom: 12px; color: #174b3b; }
+  .staff-body .staff-role-card h3 .icon { flex-shrink: 0; }
+  .staff-body .staff-role-card ul { list-style: disc; padding-left: 20px; margin-block: 12px; }
+  .staff-body .staff-role-card li + li { margin-top: 8px; }
+  .staff-body .staff-role-limits { border-top: 1px solid #174b3b12; padding-top: 12px; color: #52685c; margin-bottom: 0; }
+  @media (max-width: 900px) { .staff-body .staff-role-grid { grid-template-columns: minmax(0, 1fr); } }
 }

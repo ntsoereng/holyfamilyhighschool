@@ -1,3 +1,4 @@
+from .roles import STAFF_ROLE_CHOICES
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User, Group
@@ -109,8 +110,10 @@ class ApplicationReviewForm(forms.ModelForm):
 
 
 class StaffUserCreationForm(UserCreationForm):
-    role = forms.ChoiceField(choices=[('Content editors', 'Content editor'), ('Admissions officers', 'School office — admissions and messages'),
-                                      ('both', 'Content editor and admissions officer')])
+    role = forms.ChoiceField(choices=STAFF_ROLE_CHOICES, help_text=(
+        'Content editor manages public content and Site Settings. School office handles private applications and messages, '
+        'including deletion. The combined role has both sets of access. None can manage staff accounts. '
+        'See the role guide above for full details.'))
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']

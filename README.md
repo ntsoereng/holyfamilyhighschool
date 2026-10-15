@@ -179,3 +179,17 @@ One metadata provider supplies HTML titles, descriptions, Open Graph/Twitter pre
 Regression checks in `school.test_public_sweep` crawl internal links and anchors, verify public metadata and HEAD responses, exercise list/detail return paths, and validate sitemap/robots visibility rules.
 
 The calendar uses a shorter header and tighter month cells. On phones, the seven-column grid fits the viewport; marked dates link to the agenda below, where titles, local times and locations remain readable. Upcoming dates collapse by default on phones and remain expanded on larger screens; the native disclosure still works without JavaScript. Repeated contact prompts and event “View details” labels were removed from the calendar, while event cards remain clickable.
+
+### Sign-in protection (Django AXES)
+
+AXES protects both staff and Django admin authentication against repeated password guesses. The defaults block an IP after five failures, with a 30-minute cooldown; a successful sign-in resets its failure count. `DJANGO_AXES_FAILURE_LIMIT`, `DJANGO_AXES_COOLOFF_MINUTES` and `DJANGO_AXES_RESET_ON_SUCCESS` override these defaults. This is separate from public application/contact submission limits and does not replace strong passwords or network protection.
+
+Website superusers can inspect **AXES → Access attempts** in Django administration to investigate failed sign-ins and remove a verified user's attempt record to clear a lockout. From the deployment environment, `python manage.py axes_reset_ip <IP_ADDRESS>` clears only that address. Verify the requester before resetting; avoid clearing every lockout during an attack. Review repeated failures in security logs and establish a retention schedule for authentication records. AXES does not automatically send security alerts in this project.
+
+Lockouts currently use the network address supplied in `REMOTE_ADDR`. Confirm that production's reverse proxy supplies the real visitor address: otherwise everyone can share the proxy's lockout. People on a shared school connection can also share an IP lockout. Do not trust arbitrary forwarded headers to solve this; configure the trusted proxy correctly first.
+
+### Standard staff roles
+
+The **Staff access** screen includes a role guide and inline account-creation help. `school/roles.py` is the shared source for the guide, role choices and group setup. Content editors manage every current public content type and Site Settings; school office staff handle private applications and messages, including deletion. Combined access includes both. Only website superusers manage staff accounts and use Django administration. School management profile titles do not grant login permissions.
+
+Run `python manage.py setup_staff_groups` after adding a content type or deploying role changes. It synchronises the two standard groups to their defined model permissions, so review intentional customisations before running it; other groups and individual user permissions are not changed. Add new managed content types to the role registry and keep its descriptions current. The role coverage test checks this registry against the workspace content registry.
