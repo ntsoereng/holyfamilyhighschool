@@ -78,3 +78,32 @@ class HomepageTests(TestCase):
         self.assertContains(response, 'Contact the school office')
         self.assertNotContains(response, 'href="tel:')
         self.assertNotContains(response, 'href="mailto:')
+
+    @override_settings(TIME_ZONE='Africa/Maseru')
+    def test_today_events_stay_visible_after_start_and_use_school_local_date(self):
+        from datetime import datetime, timezone as dt_timezone
+        from unittest.mock import patch
+        # It is 02:30 on 18 October in Lesotho, including events from 22:00 UTC on the 17th.
+        now = datetime(2026, 10, 18, 0, 30, tzinfo=dt_timezone.utc)
+        past_today = Event.objects.create(title='Early school gathering', location='Hall',
+            description='Earlier this morning', starts_at=datetime(2026, 10, 17, 22, 5, tzinfo=dt_timezone.utc), published=True)
+        later_today = Event.objects.create(title='Afternoon gathering', location='Hall',
+            description='Later today', starts_at=datetime(2026, 10, 18, 12, 0, tzinfo=dt_timezone.utc), published=True)
+        tomorrow = Event.objects.create(title='Tomorrow gathering', location='Hall',
+            description='Tomorrow', starts_at=datetime(2026, 10, 18, 22, 5, tzinfo=dt_timezone.utc), published=True)
+        Event.objects.create(title='Yesterday gathering', location='Hall', description='Past',
+            starts_at=datetime(2026, 10, 17, 21, 59, tzinfo=dt_timezone.utc), published=True)
+        Event.objects.create(title='Private gathering', location='Hall', description='Draft',
+            starts_at=datetime(2026, 10, 18, 1, 0, tzinfo=dt_timezone.utc), published=False)
+        with patch('school.views.timezone.now', return_value=now):
+            response = self.client.get('/')
+        self.assertEqual(list(response.context['events']), [past_today, later_today, tomorrow])
+        self.assertContains(response, 'Happening today', count=2)
+        self.assertNotContains(response, 'Yesterday gathering')
+        self.assertNotContains(response, 'Private gathering')
+        with patch('school.views.timezone.now', return_value=datetime(2026, 10, 18, 22, 0, tzinfo=dt_timezone.utc)):
+            response = self.client.get('/')
+        self.assertNotContains(response, 'Early school gathering')
+        self.assertNotContains(response, 'Afternoon gathering')
+        self.assertContains(response, 'Tomorrow gathering')
+        self.assertContains(response, 'Happening today', count=1)

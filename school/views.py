@@ -15,11 +15,15 @@ from .calendar import build_calendar_context
 
 @require_safe
 def home(request):
+    now = timezone.now()
+    local_now = timezone.localtime(now) if timezone.is_aware(now) else now
+    start_of_today = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
     return render(request, 'school/home.html', {
         'articles': Article.objects.live()[:3],
         'announcements': Announcement.objects.live()[:3],
         'projects': Project.objects.live()[:3],
-        'events': Event.objects.filter(published=True, starts_at__gte=timezone.now())[:3],
+        'events': Event.objects.filter(published=True, starts_at__gte=start_of_today)[:3],
+        'homepage_today': local_now.date(),
         'values': SchoolValue.objects.all(),
         'statistics': SchoolStatistic.objects.filter(published=True, show_on_homepage=True),
     })

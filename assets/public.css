@@ -869,4 +869,7 @@
   .public-site .protected-email-icon { display: inline-flex; flex-shrink: 0; }
   .public-site .hf-contact-details .protected-email-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: #ffffff12; color: #eed6a3; }
   .public-site .hf-contact-details .protected-email-text > span:last-child { display: block; font-weight: 600; }
+
+  .public-site .event-row.is-today { border-color: #b7a16a80; }
+  .public-site .event-today-label { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border: 1px solid #b7a16a40; border-radius: 20px; background: #e9d9b84d; color: #174b3b; font-size: .72rem; font-weight: 600; line-height: 1.5; }
 }
