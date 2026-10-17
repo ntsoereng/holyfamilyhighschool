@@ -871,5 +871,5 @@
   .public-site .hf-contact-details .protected-email-text > span:last-child { display: block; font-weight: 600; }
 
   .public-site .event-row.is-today { border-color: #b7a16a80; }
-  .public-site .event-today-label { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border: 1px solid #b7a16a40; border-radius: 20px; background: #e9d9b84d; color: #174b3b; font-size: .72rem; font-weight: 600; line-height: 1.5; }
+  .public-site .event-row .event-today-label { display: inline-flex; align-items: center; width: fit-content; max-width: 100%; margin: 0 0 10px; padding: 5px 11px; border: 1px solid #b7a16a66; border-radius: 999px; background: #eee4cd; color: #174b3b; font-size: .72rem; font-weight: 600; line-height: 1.4; letter-spacing: .01em; box-shadow: inset 0 1px 0 #ffffffb3; }
 }
