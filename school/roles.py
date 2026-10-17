@@ -4,11 +4,11 @@ STAFF_ROLES = (
         'name': 'Content editors',
         'label': 'Content editor',
         'icon': 'news',
-        'models': ('schoollifepost', 'studentauthor', 'sitesettings', 'article', 'event',
+        'models': ('announcement', 'project', 'schoollifepost', 'studentauthor', 'sitesettings', 'article', 'event',
                    'schoolvalue', 'department', 'staffmember', 'subject', 'schoolstatistic'),
         'summary': 'Manages the public website and school content.',
         'powers': (
-            'Create, edit, publish, schedule and delete news, events and School Life stories, poems and articles.',
+            'Create, edit, publish, schedule and delete announcements, projects, news, events and School Life stories, poems and articles.',
             'Manage reusable student authors and grades, departments, staff profiles and management roles, subjects, school values and statistics.',
             'Upload content images and update Site Settings, including page content, contact details, Facebook, admissions information and the additional privacy notice.',
         ),

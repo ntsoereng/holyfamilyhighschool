@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 
 {% block content %}
 {% include 'components/page_header.html' with eyebrow='OUR COMMUNITY · STUDENT VOICES' title='School Life' introduction='Stories, poems and ideas from the students of Holy Family.' %}
@@ -15,7 +15,7 @@
         {% else %}<div class="article-placeholder writing-placeholder writing-{{ item.category }}" aria-hidden="true">{% include 'components/icon.html' with name='book' %}<span>{{ item.get_category_display }}</span></div>{% endif %}
         <div class="article-card-body">
           <p class="article-meta">{{ item.get_category_display }} <span aria-hidden="true">·</span> <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:'j M Y' }}</time></p>
-          <h2>{{ item.title }}</h2><p>{{ item.excerpt }}</p>
+          <h2>{{ item.title }}</h2><p>{{ item.excerpt|protect_email_text }}</p>
           <p class="student-credit">{{ item.author_name }} <span aria-hidden="true">·</span> {{ item.author_grade }}</p>
         </div>
       </a>

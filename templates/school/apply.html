@@ -1,4 +1,4 @@
-{% extends 'base.html' %}{% load static %}
+{% extends 'base.html' %}{% load email_protection %}{% load static %}
 
 
 {% block extra_head %}<script src="{% static 'js/admissions.js' %}" defer></script>{% endblock %}
@@ -20,7 +20,7 @@
           <div><dt>Payment method</dt><dd>{{ school.admissions_payment_method }}{% if school.admissions_merchant_number %} <span>School merchant number <strong>{{ school.admissions_merchant_number }}</strong></span>{% endif %}</dd></div>
           {% if school.admissions_deadline %}<div><dt>Submit by</dt><dd><time datetime="{{ school.admissions_deadline|date:'Y-m-d' }}">{{ school.admissions_deadline|date:'j F Y' }}</time></dd></div>{% endif %}
         </dl>
-        {% if school.admissions_requirements %}<p class="admissions-extra-guidance">{{ school.admissions_requirements|linebreaksbr }}</p>{% endif %}
+        {% if school.admissions_requirements %}<p class="admissions-extra-guidance">{{ school.admissions_requirements|protect_email_text|linebreaksbr }}</p>{% endif %}
       </div>
       <section class="hf-card admissions-interview" aria-labelledby="interview-heading">
         <span class="icon-tile">{% include 'components/icon.html' with name='calendar' %}</span>
@@ -35,7 +35,7 @@
       <div class="admissions-help hf-card">
         <p class="eyebrow">NEED A HAND?</p><p>Have a question about your application? Our school office is here to help you.</p>
         {% if school.phone %}<a href="tel:{{ school.phone }}">{% include 'components/icon.html' with name='phone' %} {{ school.phone }}</a>{% endif %}
-        {% if school.email %}<a href="mailto:{{ school.email }}">{% include 'components/icon.html' with name='mail' %} {{ school.email }}</a>{% endif %}
+        {% if school.email %}{% protected_email school.email icon=True %}{% endif %}
         <a class="text-link" href="{% url 'contact' %}">Contact the school {% include 'components/icon.html' with name='chevron' %}</a>
       </div>
     </aside>

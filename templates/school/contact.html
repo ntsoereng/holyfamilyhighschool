@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 
 
 {% block content %}
@@ -10,7 +10,7 @@
       <div class="hf-contact-details">
         <div class="hf-contact-heading"><p class="eyebrow">CONTACT DETAILS</p><h2>{{ school.name }}</h2><p>Choose the way that works best for you.</p></div>
         {% if school.phone %}<a class="contact-detail" href="tel:{{ school.phone }}"><span class="icon-tile">{% include 'components/icon.html' with name='phone' %}</span><span><span class="hf-detail-label">Call us</span><strong>{{ school.phone }}</strong></span></a>{% endif %}
-        {% if school.email %}<a class="contact-detail" href="mailto:{{ school.email }}"><span class="icon-tile">{% include 'components/icon.html' with name='mail' %}</span><span><span class="hf-detail-label">Email us</span><strong>{{ school.email }}</strong></span></a>{% endif %}
+        {% if school.email %}{% protected_email school.email link_class='contact-detail' icon=True label='Email us' %}{% endif %}
       </div>
       <div class="hf-card hf-contact-location">
         <div class="contact-detail"><span class="icon-tile">{% include 'components/icon.html' with name='pin' %}</span><div><h3>Visit the school</h3>{% if school.address %}<p>{{ school.address|linebreaksbr }}</p>{% else %}<p>Please contact the office for directions.</p>{% endif %}</div></div>

@@ -11,11 +11,12 @@ from django.urls import reverse
 from django.utils.text import Truncator
 from django.utils.html import strip_tags
 
-from .models import Article, Department, Event, SiteSettings, StaffMember, Subject, SchoolLifePost
+from .templatetags.email_protection import protect_email_text
+from .models import Announcement, Project, Article, Department, Event, SiteSettings, StaffMember, Subject, SchoolLifePost
 
 
-PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy', 'terms', 'donation')
-PUBLIC_DETAIL_PAGES = ('article', 'event', 'subject', 'school-department', 'school-staff-profile', 'school-life-post')
+PRIMARY_PAGES = ('home', 'about', 'contact', 'curriculum', 'school-staff', 'events', 'apply', 'news', 'school-life', 'privacy', 'terms', 'donation', 'announcements', 'projects')
+PUBLIC_DETAIL_PAGES = ('article', 'event', 'subject', 'school-department', 'school-staff-profile', 'school-life-post', 'announcement', 'project')
 LEGACY_PAGES = {'about': 'about', 'about-us': 'about', 'curriculum': 'curriculum',
                 'our-staff': 'school-staff', 'staff': 'school-staff'}
 
@@ -52,7 +53,7 @@ def public_staff():
 
 def plain_description(value):
     text = re.sub(r'\s+', ' ', strip_tags(unescape(str(value or '')))).strip()
-    return Truncator(text).chars(160)
+    return Truncator(protect_email_text(text)).chars(160)
 
 
 def first_description(*values):
@@ -85,6 +86,8 @@ def metadata(request):
         'events': (f'Calendar · {school.name}', school.calendar_intro, school.calendar_image, school.calendar_image_alt),
         'apply': (f'Admissions · {school.name}', school.admissions_text if school.admissions_open else f'Admissions at {school.name} are currently closed. Contact the school office for information about the next intake.', school.admissions_image if school.admissions_open else None, school.admissions_image_alt if school.admissions_open else ''),
         'school-life': ('School Life · ' + school.name, f'Stories, poems and articles by students at {school.name}.', None, ''),
+        'announcements': (f'Announcements · {school.name}', f'Official school notices and important updates from {school.name}.', None, ''),
+        'projects': (f'Projects · {school.name}', f'Explore planned, ongoing and completed projects at {school.name}.', None, ''),
         'news': (f'News · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
         'application-success': (f'Application received · {school.name}', 'Your application has been received. Keep your private reference for follow-up with the school office.', None, ''),
         'privacy': (f'Privacy Policy · {school.name}', f'How {school.name} uses personal information, protects learner data and handles cookies under Lesotho’s data protection law.', None, ''),
@@ -109,7 +112,13 @@ def metadata(request):
     published_at = None
 
     item = None
-    if route == 'school-life-post':
+    if route in {'announcement', 'project'}:
+        model = Announcement if route == 'announcement' else Project
+        item = model.objects.live().filter(slug=kwargs.get('slug')).first()
+        if item:
+            description = first_description(item.excerpt, item.body, item.title)
+            og_type, published_at = 'article', item.published_at
+    elif route == 'school-life-post':
         item = SchoolLifePost.objects.live().filter(slug=kwargs.get('slug')).first()
         if item:
             description = first_description(item.excerpt, item.body, f'Read {item.title}, a {item.get_category_display().lower()} by {item.author_name} at {school.name}.')
@@ -146,8 +155,8 @@ def metadata(request):
     elif route in PUBLIC_DETAIL_PAGES:
         public = False
 
-    if route in {'news', 'school-life'}:
-        posts = SchoolLifePost.objects.live() if route == 'school-life' else Article.objects.live()
+    if route in {'news', 'school-life', 'announcements', 'projects'}:
+        posts = {'school-life': SchoolLifePost, 'news': Article, 'announcements': Announcement, 'projects': Project}[route].objects.live()
         query = {}
         category = request.GET.get('category', '')
         if route == 'school-life' and category in dict(SchoolLifePost._meta.get_field('category').choices):
@@ -167,8 +176,8 @@ def metadata(request):
             path += '?' + urlencode(query)
 
     parent = {'article': 'news', 'school-life-post': 'school-life', 'subject': 'curriculum',
-              'school-department': 'school-staff', 'school-staff-profile': 'school-staff', 'event': 'events'}.get(route, route)
-    section = 'school' if parent in {'about', 'curriculum', 'school-staff'} else 'community' if parent in {'news', 'school-life', 'donation'} else parent
+              'school-department': 'school-staff', 'school-staff-profile': 'school-staff', 'event': 'events', 'announcement': 'announcements', 'project': 'projects'}.get(route, route)
+    section = 'school' if parent in {'about', 'curriculum', 'school-staff'} else 'community' if parent in {'news', 'school-life', 'donation', 'announcements', 'projects'} else parent
     return {'seo': {
         'parent': parent, 'section': section,
         'title': title,

@@ -199,6 +199,64 @@ class AutoSlugModel(models.Model):
                 self.slug = ''
 
 
+class AnnouncementQuerySet(PublishedQuerySet):
+    def live(self):
+        from django.db.models import Q
+        return super().live().filter(Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now()))
+
+
+class Announcement(AutoSlugModel):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
+    excerpt = models.TextField('Summary', max_length=400)
+    body = HTMLField()
+    pinned = models.BooleanField(default=False, help_text='Show this announcement before other active announcements.')
+    published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField(null=True, blank=True,
+        help_text='Optional. Automatically remove this announcement from public pages at this time.')
+    objects = AnnouncementQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['-pinned', '-published_at', '-pk']
+
+    def clean(self):
+        if self.expires_at and self.published_at and self.expires_at <= self.published_at:
+            raise ValidationError({'expires_at': 'Expiry must be after the publication date.'})
+
+    def save(self, *args, **kwargs):
+        self.body = clean_html(self.body)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class Project(AutoSlugModel):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
+    excerpt = models.TextField('Summary', max_length=400)
+    body = HTMLField()
+    image = models.ImageField(upload_to=image_path, validators=[validate_image], blank=True)
+    image_alt = models.CharField('Image description', max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=[('planned', 'Planned'), ('ongoing', 'Ongoing'),
+                                                    ('completed', 'Completed')], default='planned')
+    order = models.PositiveSmallIntegerField(default=0, help_text='Lower numbers appear first; 0 is highest priority.')
+    published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(default=timezone.now)
+    objects = PublishedQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['order', '-published_at', '-pk']
+
+    def save(self, *args, **kwargs):
+        self.body = clean_html(self.body)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
 class Article(AutoSlugModel):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)

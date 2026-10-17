@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 {% block content %}
 {% include 'components/page_header.html' with eyebrow='WEBSITE POLICIES' title='Privacy Policy' introduction='How we collect, use and protect personal information when you use our website.' %}
 <section class="container reading-page legal-page">
@@ -6,7 +6,7 @@
 <nav class="legal-contents" aria-label="Privacy Policy contents"><strong>On this page</strong><a href="#responsibility">Responsibility and law</a><a href="#information">Information and purposes</a><a href="#children">Children and student work</a><a href="#sharing">Sharing and retention</a><a href="#cookies">Cookies and external services</a><a href="#rights">Your choices and rights</a></nav>
 <div class="prose">
 <h2 id="responsibility">1. Responsibility and applicable law</h2>
-<p>{{ school.name }} is responsible for personal information collected through this website. Contact the school office using our <a href="{% url 'contact' %}">contact page</a>{% if school.email %} or email <a href="mailto:{{ school.email }}">{{ school.email }}</a>{% endif %} about this policy or a privacy request.</p>
+<p>{{ school.name }} is responsible for personal information collected through this website. Contact the school office using our <a href="{% url 'contact' %}">contact page</a>{% if school.email %} or email {% protected_email school.email %}{% endif %} about this policy or a privacy request.</p>
 <p>Our handling of personal information is guided by Lesotho’s <a href="https://www.nic.ls/lsnic/community/policies/Data_Protection_Act_2011_Lesotho.pdf">Data Protection Act, 2011 (Act No. 5 of 2012)</a>. The Act addresses lawful processing, purpose limitation, retention, security, access and correction, and transfers outside Lesotho. Relevant provisions include sections 15–26, 29 and 36, and 52. This policy describes this website; separate school records and services may require additional notices.</p>
 <h2 id="information">2. What we collect and why</h2>
 <ul>
@@ -43,7 +43,7 @@
 <p>You may ask to access personal information held about you, correct inaccurate information, or request deletion or object to processing where the law permits. Where processing relies on consent, you may withdraw it for future processing; this does not undo prior lawful processing. Some records may still need to be retained for lawful purposes.</p>
 <p>Send your request through the school office, describing the record concerned and, for applications, your reference if available. We may request proportionate identity or guardian-authority checks before disclosing or changing a learner’s information. We will explain any lawful restriction on your request.</p>
 <p>The Act provides for complaints to the Data Protection Commission. Its operational arrangements should be verified before lodging a complaint; contact the relevant Lesotho government authority for the current route. You may seek independent advice about available legal remedies.</p>
-{% if school.privacy_text %}<h2>10. Additional school notice</h2>{{ school.privacy_text|linebreaks }}{% endif %}
+{% if school.privacy_text %}<h2>10. Additional school notice</h2>{{ school.privacy_text|protect_email_text|linebreaks }}{% endif %}
 <h2>Policy changes</h2><p>We may update this policy as services or legal requirements change. The date above identifies this version. Material changes affecting how we use information will be communicated where appropriate.</p>
 </div>
 <div class="legal-related"><a class="text-link" href="{% url 'terms' %}">Terms of Use <span aria-hidden="true">→</span></a><a class="text-link" href="{% url 'contact' %}">Contact the school</a></div>

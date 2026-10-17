@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}
+{% include 'components/page_header.html' with title=section_title introduction=introduction %}
+<section class="container section"><div class="community-grid">{% for item in items %}{% include 'school/community_card.html' with list_page=items.number heading_level=2 %}{% empty %}<div class="hf-card community-empty"><p>No {{ section_title|lower }} published yet. Please check back for updates.</p></div>{% endfor %}</div>
+{% if items.has_other_pages %}<nav class="pagination" aria-label="{{ section_title }} pages">{% if items.has_previous %}<a class="text-link" href="?page={{ items.previous_page_number }}">Previous</a>{% endif %}<span>Page {{ items.number }} of {{ items.paginator.num_pages }}</span>{% if items.has_next %}<a class="text-link" href="?page={{ items.next_page_number }}">Next</a>{% endif %}</nav>{% endif %}</section>{% endblock %}

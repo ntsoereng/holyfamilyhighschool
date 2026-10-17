@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% load email_protection %}{% block content %}
+{% include 'components/page_header.html' with title=item.title introduction=item.excerpt eyebrow=section_title %}
+<article class="container reading-page"><p class="detail-meta"><time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:'j F Y' }}</time>{% if not is_announcement %} · {{ item.get_status_display }}{% elif item.expires_at %} · Notice available until {{ item.expires_at|date:'j F Y' }}{% endif %}</p>{% if item.image %}<img class="detail-image" src="{{ item.image.url }}" alt="{{ item.image_alt }}">{% endif %}<div class="prose">{{ item.body|protect_email_html }}</div><div class="article-back">{% include 'components/back_link.html' %}</div></article>{% endblock %}

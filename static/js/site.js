@@ -122,3 +122,13 @@ document.querySelectorAll('.nav-dropdown').forEach(dropdown => {
   }
   start();
 })();
+
+// Keep raw mailto addresses out of delivered markup; activate on user interaction.
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[data-email-address]');
+  if (!link) return;
+  const address = link.dataset.emailAddress.replaceAll(' [at] ', '@');
+  if (!address.includes('@') || /[\r\n]/.test(address)) return;
+  const subject = link.dataset.emailSubject;
+  link.href = `mailto:${encodeURIComponent(address).replace('%40', '@')}${subject ? `?subject=${encodeURIComponent(subject)}` : ''}`;
+});

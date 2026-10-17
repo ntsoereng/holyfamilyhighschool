@@ -202,3 +202,20 @@ Admissions has a dedicated sidebar group with **Applications** and **Admissions 
 Closing admissions hides the application form, intake/payment/interview details and promotional introduction. The page shows a closure notice, and Admissions remains the final link in the public **Our school** menu.
 
 Applications offer **Export to Excel** for users with application-view permission. The `.xlsx` download includes every record matching the current search/status filters, across all list pages. It includes submitted information, application reference, review status and local submission time, but excludes internal staff notes. Phone numbers remain text and submitted spreadsheet formulas are stored as literal text. Exports are marked private/no-store and an export count is recorded in the audit history without applicant names or the search text. Handle downloaded files as private school records; downloaded copies are outside website access controls. Install the updated requirements before deploying this feature (`openpyxl` and `et-xmlfile`), and run migrations.
+
+
+### Announcements and projects
+
+Announcements are separate from news, events and student writing. Editors can draft, schedule, pin and optionally expire a notice. Only published notices whose publication time has arrived and whose expiry has not passed appear on the homepage, public list, detail pages and sitemap. Expired notices remain in the staff workspace for editing or reuse.
+
+Projects have their own published list/detail pages, summary, rich content, optional image, planned/ongoing/completed status and display order. The homepage shows up to three active announcements and three published projects; empty sections are omitted. Both types use automatically generated, stable slugs and support embedded editor images. Their public lists are paginated and detail pages return to the originating list page.
+
+Run migrations on deployment. Migration 0020 adds the models and grants their permissions to existing Content editors without changing unrelated grants. New groups use the shared role registry. Admissions officers retain their existing admissions-only access. Both types are managed under Community in the staff menu; News is labelled separately from School Life.
+
+General settings no longer expose the unused motto display or the title for the removed homepage welcome section. Existing data is retained. The about/history introduction now appears with the About settings rather than Homepage settings. Current school values, statistics, admissions and student-author management remain available because they are still used by the website.
+
+### Public email address protection
+
+Public contact addresses display ` [at] ` in place of `@`, with a reusable protected-email component and a contact-page fallback when JavaScript is unavailable. The email-app link is assembled only when activated; public HTML does not ship a raw `mailto:` address. Donation links retain their enquiry subject. Rich published content also obfuscates addresses and converts email links, and metadata descriptions omit raw email addresses. The School JSON-LD no longer includes an email property.
+
+Stored contact settings, private staff records, application exports and visitor-entered form values remain unchanged. This discourages basic address scraping; it cannot prevent a determined scraper from reconstructing a visible address. Existing contact-form throttles, validation and honeypot protections remain in force. Mail-server spam filtering and sender authentication are managed separately by the email provider.

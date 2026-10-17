@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.views.decorators.http import require_safe
 
-from .models import Article, Department, Event, Subject, SchoolLifePost
+from .models import Announcement, Project, Article, Department, Event, Subject, SchoolLifePost
 from .seo import PRIMARY_PAGES, absolute_url, canonical_origin, indexing_enabled, public_staff
 
 
@@ -77,7 +77,23 @@ class StaffProfileSitemap(ConfiguredSitemap):
         return reverse('school-staff-profile', kwargs={'slug': item.slug})
 
 
-SITEMAPS = {'school-life': SchoolLifeSitemap, 'pages': PrimaryPagesSitemap, 'articles': ArticleSitemap, 'events': EventSitemap,
+class AnnouncementSitemap(ConfiguredSitemap):
+    def items(self):
+        return Announcement.objects.live()
+
+    def location(self, item):
+        return reverse('announcement', kwargs={'slug': item.slug})
+
+
+class ProjectSitemap(ConfiguredSitemap):
+    def items(self):
+        return Project.objects.live()
+
+    def location(self, item):
+        return reverse('project', kwargs={'slug': item.slug})
+
+
+SITEMAPS = {'announcements': AnnouncementSitemap, 'projects': ProjectSitemap, 'school-life': SchoolLifeSitemap, 'pages': PrimaryPagesSitemap, 'articles': ArticleSitemap, 'events': EventSitemap,
             'subjects': SubjectSitemap, 'departments': DepartmentSitemap, 'staff': StaffProfileSitemap}
 
 

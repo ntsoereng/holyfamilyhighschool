@@ -9,7 +9,9 @@
 {% if perms.school.view_schoolvalue %}<a href="{% url 'staff-list' 'values' %}" {% if section == 'values' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='shield' %}School values</a>{% endif %}
 {% if perms.school.view_schoolstatistic %}<a href="{% url 'staff-list' 'statistics' %}" {% if section == 'statistics' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='chart' %}School statistics</a>{% endif %}
 </div>{% endif %}
-{% if perms.school.view_article or perms.school.view_event or perms.school.view_schoollifepost or perms.school.view_studentauthor %}<div class="staff-nav-group"><p class="staff-nav-label">Community</p>
+{% if perms.school.view_announcement or perms.school.view_project or perms.school.view_article or perms.school.view_event or perms.school.view_schoollifepost or perms.school.view_studentauthor %}<div class="staff-nav-group"><p class="staff-nav-label">Community</p>
+{% if perms.school.view_announcement %}<a href="{% url 'staff-list' 'announcements' %}" {% if section == 'announcements' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='document' %}Announcements</a>{% endif %}
+{% if perms.school.view_project %}<a href="{% url 'staff-list' 'projects' %}" {% if section == 'projects' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='chart' %}Projects</a>{% endif %}
 {% if perms.school.view_schoollifepost %}<a href="{% url 'staff-list' 'school-life' %}" {% if section == 'school-life' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='book' %}School Life</a>{% endif %}
 {% if perms.school.view_studentauthor %}<a href="{% url 'staff-list' 'student-authors' %}" {% if section == 'student-authors' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='people' %}Student authors</a>{% endif %}
 {% if perms.school.view_article %}<a href="{% url 'staff-list' 'articles' %}" {% if section == 'articles' %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name='news' %}News & articles</a>{% endif %}

@@ -1,15 +1,15 @@
 from django.contrib import admin
-from .models import SiteSettings, Article, Event, SchoolValue, Application, Department, StaffMember
+from .models import Announcement, Project, SiteSettings, Article, Event, SchoolValue, Application, Department, StaffMember
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    fieldsets = [('About', {'fields': ('about_heading', 'about_intro', 'about_history', 'about_mission', 'about_vision', 'about_image', 'about_image_alt')}),
+    fieldsets = [('About', {'fields': ('about_heading', 'about_intro', 'about_text', 'about_history', 'about_mission', 'about_vision', 'about_image', 'about_image_alt')}),
         ('Curriculum', {'fields': ('curriculum_heading', 'curriculum_intro', 'curriculum_body', 'curriculum_image', 'curriculum_image_alt')}),
         ('Staff', {'fields': ('staff_heading', 'staff_intro', 'staff_image', 'staff_image_alt')}),
         ('Calendar', {'fields': ('calendar_heading', 'calendar_intro', 'calendar_image', 'calendar_image_alt')}),
         ('Page photographs', {'fields': ('contact_image', 'contact_image_alt', 'admissions_image', 'admissions_image_alt')}),
-        ('Identity', {'fields': ('name','motto','logo','demo_mode')}),
-        ('Homepage', {'fields': ('hero_eyebrow','hero_title','hero_text','hero_image','hero_image_alt','about_title','about_text')}),
+        ('Identity', {'fields': ('name','logo','demo_mode')}),
+        ('Homepage', {'fields': ('hero_eyebrow','hero_title','hero_text','hero_image','hero_image_alt')}),
         ('Contact details', {'fields': ('address','office_hours','email','phone','google_maps_embed_url')}),
         ('Admissions & privacy', {'fields': ('admissions_open','admissions_heading','admissions_text','admissions_requirements','privacy_text')}),
         ('Admissions cycle & interview details', {'fields': ('admissions_grade', 'admissions_year', 'admissions_fee',
@@ -80,3 +80,19 @@ class SchoolLifePostAdmin(admin.ModelAdmin):
     list_display = ['title', 'author', 'category', 'published_at', 'published']
     list_filter = ['category', 'published', 'author__grade']
     search_fields = ['title', 'author__title']
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ['title', 'pinned', 'published', 'published_at', 'expires_at']
+    list_filter = ['published', 'pinned']
+    search_fields = ['title', 'excerpt']
+    readonly_fields = ['slug']
+
+
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ['title', 'status', 'published', 'order', 'published_at']
+    list_filter = ['published', 'status']
+    search_fields = ['title', 'excerpt']
+    readonly_fields = ['slug']

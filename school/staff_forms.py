@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost, ENTRY_LEVEL_CHOICES
+from .models import Announcement, Project, Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost, ENTRY_LEVEL_CHOICES
 from .security import normalize_google_maps_embed
 
 ADMISSIONS_CYCLE_FIELDS = ['admissions_grade', 'admissions_year', 'admissions_fee',
@@ -18,6 +18,27 @@ class StaffAuthenticationForm(AuthenticationForm):
         super().confirm_login_allowed(user)
         if not user.is_staff:
             raise ValidationError('This account does not have staff access.', code='not_staff')
+
+
+class AnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = Announcement
+        fields = ['title', 'excerpt', 'body', 'pinned', 'published', 'published_at', 'expires_at']
+        widgets = {'body': forms.Textarea(attrs={'class': 'rich-editor'}),
+                   **{name: forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'})
+                      for name in ['published_at', 'expires_at']}}
+        help_texts = {'published': 'Uncheck to keep a draft. Active announcements appear on the homepage.',
+                      'published_at': 'Local Lesotho time. A future date schedules publication.'}
+
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['title', 'excerpt', 'body', 'image', 'image_alt', 'status', 'order', 'published', 'published_at']
+        widgets = {'body': forms.Textarea(attrs={'class': 'rich-editor'}),
+                   'published_at': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'})}
+        help_texts = {'published': 'Published projects appear on the Projects page and homepage.',
+                      'published_at': 'Local Lesotho time. A future date schedules publication.'}
 
 
 class ArticleForm(forms.ModelForm):
@@ -67,7 +88,7 @@ class SettingsForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if admissions_separate:
             for name in list(self.fields):
-                if name.startswith('admissions_'):
+                if name.startswith('admissions_') or name in {'motto', 'about_title'}:
                     self.fields.pop(name)
         if self.is_bound:
             # An older workspace form may not contain these new cycle settings.
@@ -92,8 +113,8 @@ class SettingsForm(forms.ModelForm):
     def fieldsets(self):
         groups = [
             ('School identity & footer', ['name', 'motto', 'logo', 'footer_text', 'facebook_url']),
-            ('Homepage introduction', ['hero_eyebrow', 'hero_title', 'hero_text', 'hero_image', 'hero_image_alt', 'about_title', 'about_text']),
-            ('About — history, mission & vision', ['about_heading', 'about_intro', 'about_image', 'about_image_alt', 'about_history', 'about_mission', 'about_vision']),
+            ('Homepage introduction', ['hero_eyebrow', 'hero_title', 'hero_text', 'hero_image', 'hero_image_alt']),
+            ('About — history, mission & vision', ['about_heading', 'about_intro', 'about_text', 'about_image', 'about_image_alt', 'about_history', 'about_mission', 'about_vision']),
             ('Curriculum', ['curriculum_heading', 'curriculum_intro', 'curriculum_image', 'curriculum_image_alt', 'curriculum_body']),
             ('Staff directory', ['staff_heading', 'staff_intro', 'staff_image', 'staff_image_alt']),
             ('School calendar', ['calendar_heading', 'calendar_intro', 'calendar_image', 'calendar_image_alt']),

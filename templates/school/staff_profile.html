@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 
 
 {% block content %}
@@ -16,7 +16,7 @@
         {% if member.position %}<p class="staff-position">{{ member.position }}</p>{% endif %}
         {% if member.date_from %}<p class="hf-profile-meta">At Holy Family from <time datetime="{{ member.date_from|date:'Y-m-d' }}">{{ member.date_from|date:'j F Y' }}</time></p>{% endif %}
         {% if departments %}<div class="hf-profile-departments" aria-label="Departments">{% for department in departments %}<a href="{% url 'school-department' department.pk %}">{{ department.title }}</a>{% endfor %}</div>{% endif %}
-        {% if member.biography %}<div class="prose staff-biography">{{ member.biography|linebreaks }}</div>{% else %}<p>A biography hasn’t been shared yet. <a class="text-link" href="{% url 'contact' %}">Contact the school office</a> if you’d like to reach this member of our team.</p>{% endif %}
+        {% if member.biography %}<div class="prose staff-biography">{{ member.biography|protect_email_text|linebreaks }}</div>{% else %}<p>A biography hasn’t been shared yet. <a class="text-link" href="{% url 'contact' %}">Contact the school office</a> if you’d like to reach this member of our team.</p>{% endif %}
       </div>
     </article>
   </div>

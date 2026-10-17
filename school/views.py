@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.urls import reverse
 from .navigation import writing_return_url
 from django.views.decorators.http import require_http_methods, require_safe
-from .models import SiteSettings, Article, Event, SchoolValue, Application, Department, StaffMember, Subject, SchoolStatistic, SchoolLifePost
+from .models import Announcement, Project, SiteSettings, Article, Event, SchoolValue, Application, Department, StaffMember, Subject, SchoolStatistic, SchoolLifePost
 from .forms import ApplicationForm, ContactForm
 from django.contrib import messages
 from .calendar import build_calendar_context
@@ -17,6 +17,8 @@ from .calendar import build_calendar_context
 def home(request):
     return render(request, 'school/home.html', {
         'articles': Article.objects.live()[:3],
+        'announcements': Announcement.objects.live()[:3],
+        'projects': Project.objects.live()[:3],
         'events': Event.objects.filter(published=True, starts_at__gte=timezone.now())[:3],
         'values': SchoolValue.objects.all(),
         'statistics': SchoolStatistic.objects.filter(published=True, show_on_homepage=True),
@@ -177,3 +179,34 @@ def school_life_post(request, slug):
     return render(request, 'school/school_life_post.html', {'item': item,
         'back_url': writing_return_url(request, 'school-life', SchoolLifePost.objects.live(), item.category),
         'back_label': 'Back to School Life'})
+
+
+@require_safe
+def announcements(request):
+    return render(request, 'school/community_list.html', {
+        'items': Paginator(Announcement.objects.live(), 9).get_page(request.GET.get('page')),
+        'section_title': 'Announcements', 'introduction': 'Notices and important updates from the school office.',
+        'detail_route': 'announcement', 'list_route': 'announcements', 'is_announcement': True})
+
+
+@require_safe
+def announcement(request, slug):
+    item = get_object_or_404(Announcement.objects.live(), slug=slug)
+    return render(request, 'school/community_detail.html', {'item': item, 'section_title': 'Announcements',
+        'back_url': writing_return_url(request, 'announcements', Announcement.objects.live()),
+        'back_label': 'Back to announcements', 'is_announcement': True})
+
+
+@require_safe
+def projects(request):
+    return render(request, 'school/community_list.html', {
+        'items': Paginator(Project.objects.live(), 9).get_page(request.GET.get('page')),
+        'section_title': 'Projects', 'introduction': 'Explore the initiatives and improvements taking shape at Holy Family.',
+        'detail_route': 'project', 'list_route': 'projects'})
+
+
+@require_safe
+def project(request, slug):
+    item = get_object_or_404(Project.objects.live(), slug=slug)
+    return render(request, 'school/community_detail.html', {'item': item, 'section_title': 'Projects',
+        'back_url': writing_return_url(request, 'projects', Project.objects.live()), 'back_label': 'Back to projects'})

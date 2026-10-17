@@ -69,7 +69,7 @@ class HomepageTests(TestCase):
         self.site.save()
         response = self.client.get('/donation/')
         for text in ['Monetary donations', 'In-kind donations', 'How to donate',
-                     'tel:+266 2222 3333', 'mailto:office@example.com?subject=Donation%20enquiry']:
+                     'tel:+266 2222 3333', 'office [at] example.com', 'data-email-subject="Donation enquiry"']:
             self.assertContains(response, text)
         self.assertContains(response, '/donation/')
         self.site.phone = self.site.email = ''

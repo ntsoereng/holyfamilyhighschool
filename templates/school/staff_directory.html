@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 
 
 {% block content %}
@@ -20,7 +20,7 @@
         <span class="icon-tile">{% include 'components/icon.html' with name='people' %}</span>
         <span class="hf-department-count">{{ department.public_member_count }} staff member{{ department.public_member_count|pluralize }}</span>
         <h3>{{ department.title }}</h3>
-        {% if department.description %}<p>{{ department.description|linebreaksbr }}</p>{% endif %}
+        {% if department.description %}<p>{{ department.description|protect_email_text|linebreaksbr }}</p>{% endif %}
         <span class="text-link">Meet the department {% include 'components/icon.html' with name='chevron' %}</span>
       </a>
       {% endfor %}

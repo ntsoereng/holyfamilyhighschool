@@ -52,7 +52,7 @@ class StaffWorkspaceTests(TestCase):
     def test_role_based_navigation_and_direct_access(self):
         self.client.force_login(self.editor)
         response = self.client.get('/staff/')
-        self.assertContains(response, 'News &amp; articles')
+        self.assertContains(response, '<span>News</span>', html=True)
         self.assertNotContains(response, 'Private Learner')
         self.assertNotContains(response, 'href="/staff/applications/"')
         for path in ['/staff/applications/', f'/staff/applications/{self.application.pk}/', '/staff/team/']:

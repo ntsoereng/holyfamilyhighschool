@@ -843,4 +843,30 @@
   .public-site .admissions-closed-notice { padding: 32px; max-width: 760px; margin-inline: auto; }
   .public-site .admissions-closed-notice h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-block: 20px 16px; }
   .public-site .admissions-closed-notice p { margin-bottom: 0; }
+
+  .public-site .community-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .public-site .community-grid > * { min-width: 0; }
+  .public-site .community-card { overflow: hidden; }
+  .public-site .community-card-link { display: flex; flex-direction: column; height: 100%; }
+  .public-site .community-card-image { width: 100%; height: 200px; object-fit: cover; }
+  .public-site .community-card-body { padding: 26px; display: flex; flex: 1; flex-direction: column; align-items: flex-start; }
+  .public-site .community-card-body :is(h2,h3) { font-family: var(--font-sans); font-size: 1.15rem; line-height: 1.45; letter-spacing: -.02em; margin-bottom: 12px; }
+  .public-site .community-card-body > p:not(.community-meta) { font-size: .9rem; line-height: 1.8; }
+  .public-site .community-card-body > .text-link { margin-top: auto; }
+  .public-site .community-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .75rem; color: #52685c; margin-bottom: 18px; }
+  .public-site .community-badge { display: inline-block; border-radius: 20px; padding: 4px 10px; background: #174b3b0d; color: #174b3b; font-size: .72rem; font-weight: 600; }
+  .public-site .announcement-card { border-top: 3px solid #b7a16a; }
+  .public-site .community-empty { padding: 28px; grid-column: 1 / -1; }
+  .public-site .community-empty p { margin-bottom: 0; }
+  .public-site .community-card:focus-within { border-color: #729582; box-shadow: var(--glass-shadow-raised); }
+  .public-site .home-announcements { padding-block: 40px; }
+  @media (hover: hover) { .public-site .community-card:hover { border-color: #a8bca8; box-shadow: var(--glass-shadow-raised); } }
+  @media (max-width: 1000px) { .public-site .community-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .public-site .community-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+
+  .public-site .protected-email { overflow-wrap: anywhere; }
+  .public-site .protected-email-text { min-width: 0; }
+  .public-site .protected-email-icon { display: inline-flex; flex-shrink: 0; }
+  .public-site .hf-contact-details .protected-email-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: #ffffff12; color: #eed6a3; }
+  .public-site .hf-contact-details .protected-email-text > span:last-child { display: block; font-weight: 600; }
 }

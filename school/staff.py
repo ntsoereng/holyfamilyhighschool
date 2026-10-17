@@ -17,19 +17,21 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods, require_safe
 from .roles import STAFF_ROLES
-from .models import Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost
-from .staff_forms import (AdmissionsSettingsForm, StaffAuthenticationForm, ArticleForm, EventForm, ValueForm,
+from .models import Announcement, Project, Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost
+from .staff_forms import (AnnouncementForm, ProjectForm, AdmissionsSettingsForm, StaffAuthenticationForm, ArticleForm, EventForm, ValueForm,
                           SettingsForm, ApplicationReviewForm, StaffUserCreationForm, ContactReviewForm, DepartmentForm, StaffMemberForm, SubjectForm, StatisticForm, StudentAuthorForm, SchoolLifePostForm)
 
 # Fixed registry: URL input can never choose arbitrary models, forms or permissions.
 CONTENT = {
+    'announcements': (Announcement, AnnouncementForm, 'Announcements', 'announcement'),
+    'projects': (Project, ProjectForm, 'Projects', 'project'),
     'school-life': (SchoolLifePost, SchoolLifePostForm, 'School Life', 'School Life post'),
     'student-authors': (StudentAuthor, StudentAuthorForm, 'Student authors', 'student author'),
     'departments': (Department, DepartmentForm, 'Departments', 'department'),
     'staff-profiles': (StaffMember, StaffMemberForm, 'Staff profiles', 'staff profile'),
     'subjects': (Subject, SubjectForm, 'Subjects', 'subject'),
     'statistics': (SchoolStatistic, StatisticForm, 'School statistics', 'statistic'),
-    'articles': (Article, ArticleForm, 'News & articles', 'article'),
+    'articles': (Article, ArticleForm, 'News', 'article'),
     'events': (Event, EventForm, 'Events', 'event'),
     'values': (SchoolValue, ValueForm, 'School values', 'value'),
 }
@@ -78,7 +80,7 @@ def dashboard(request):
     can_admissions = request.user.has_perm('school.view_application')
     recent = Application.objects.all()[:5] if can_admissions else []
     readable_types = [ContentType.objects.get_for_model(model).pk for model in
-                      [Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost]
+                      [Announcement, Project, Article, Event, SchoolValue, SiteSettings, Application, ContactMessage, Department, StaffMember, Subject, SchoolStatistic, StudentAuthor, SchoolLifePost]
                       if request.user.has_perm(f'school.view_{model._meta.model_name}')]
     if request.user.is_superuser:
         readable_types.append(ContentType.objects.get_for_model(User).pk)
@@ -111,7 +113,7 @@ def content_list(request, section):
         records = records.filter(published=state == 'published')
     rows = Paginator(records, 20).get_page(request.GET.get('page'))
     return render(request, 'staff/list.html', {'items': rows, 'section': section, 'title': title,
-        'singular': singular, 'query': query, 'state': state, 'has_publishing': section not in {'values', 'student-authors'},
+        'singular': singular, 'query': query, 'state': state, 'now': timezone.now(), 'has_publishing': section not in {'values', 'student-authors'},
         'can_add': request.user.has_perm(f'school.add_{model._meta.model_name}'),
         'can_change': request.user.has_perm(f'school.change_{model._meta.model_name}')})
 
@@ -132,7 +134,9 @@ def content_edit(request, section, pk=None):
         return redirect('staff-edit', section=section, pk=record.pk)
     preview = None
     if obj and getattr(obj, 'published', False):
-        if section == 'school-life' and obj.published_at <= timezone.now():
+        if section in {'announcements', 'projects'} and model.objects.live().filter(pk=obj.pk).exists():
+            preview = reverse('announcement' if section == 'announcements' else 'project', args=[obj.slug])
+        elif section == 'school-life' and obj.published_at <= timezone.now():
             preview = reverse('school-life-post', args=[obj.slug])
         elif section == 'articles' and obj.published_at <= timezone.now():
             preview = reverse('article', args=[obj.slug])
@@ -389,7 +393,7 @@ def editor_image_upload(request):
     from django.core.exceptions import ValidationError
     from django.http import JsonResponse
     from .security import validate_image
-    if not any(request.user.has_perm(f'school.{action}_{model}') for action in ['add', 'change'] for model in ['article', 'event', 'page', 'subject', 'schoollifepost']):
+    if not any(request.user.has_perm(f'school.{action}_{model}') for action in ['add', 'change'] for model in ['article', 'event', 'subject', 'schoollifepost', 'announcement', 'project']):
         raise PermissionDenied
     upload = request.FILES.get('file')
     if not upload:

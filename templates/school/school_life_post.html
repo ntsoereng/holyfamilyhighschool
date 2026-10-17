@@ -1,15 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 
 {% block content %}
 <article class="student-writing-detail">
   <header class="writing-header"><div class="container writing-reading-width">
     {% include 'components/back_link.html' with link_class='writing-back' %}
     <p class="eyebrow">{{ item.get_category_display }} <span aria-hidden="true">·</span> <time datetime="{{ item.published_at|date:'c' }}">{{ item.published_at|date:'j F Y' }}</time></p>
-    <h1>{{ item.title }}</h1><p class="lead">{{ item.excerpt }}</p>
+    <h1>{{ item.title }}</h1><p class="lead">{{ item.excerpt|protect_email_text }}</p>
   </div></header>
   <div class="container writing-reading-width writing-reading-body">
     {% if item.image %}<img class="detail-image" src="{{ item.image.url }}" alt="{{ item.image_alt }}" width="960" height="600">{% endif %}
-    <div class="prose student-prose{% if item.category == 'poem' %} student-poem{% endif %}">{{ item.body|safe }}</div>
+    <div class="prose student-prose{% if item.category == 'poem' %} student-poem{% endif %}">{{ item.body|protect_email_html }}</div>
     <footer class="student-author-credit" aria-label="Student author">
       <span class="author-initial" aria-hidden="true">{{ item.author_name|slice:':1' }}</span>
       <div><p class="eyebrow">Written by</p><h2>{{ item.author_name }}</h2><p>{{ item.author_grade }}</p></div>

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}{% load email_protection %}
 
 
 {% block content %}
@@ -6,7 +6,7 @@
 
 <section class="hf-soft-section">
   <div class="container section curriculum-page">
-    {% if school.curriculum_body %}<div class="prose curriculum-overview hf-curriculum-overview">{{ school.curriculum_body|safe }}</div>{% endif %}
+    {% if school.curriculum_body %}<div class="prose curriculum-overview hf-curriculum-overview">{{ school.curriculum_body|protect_email_html }}</div>{% endif %}
     <div class="section-heading subject-heading" id="subjects">
       <div><p class="eyebrow">EXPLORE LEARNING</p><h2>Subjects</h2></div>
       <a class="text-link" href="{% url 'school-staff' %}">Meet your teachers {% include 'components/icon.html' with name='chevron' %}</a>

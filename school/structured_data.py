@@ -17,7 +17,7 @@ def metadata(request):
         'description': plain_description(school.footer_text),
         'logo': absolute_url(school.logo.url if school.logo else static('images/holy-family-favicon-512.png')),
     }
-    for name, value in [('address', school.address), ('telephone', school.phone), ('email', school.email)]:
+    for name, value in [('address', school.address), ('telephone', school.phone)]:
         if value:
             data[name] = value
     if school.facebook_url:
