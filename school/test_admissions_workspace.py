@@ -53,6 +53,7 @@ class AdmissionsWorkspaceTests(TestCase):
         self.assertNotContains(response, 'name="hero_title"')
         payload = {name: getattr(self.site, name) for name in AdmissionsSettingsForm.Meta.fields
                    if not isinstance(self.site._meta.get_field(name), models.ImageField)}
+        payload = {name: '' if value is None else value for name, value in payload.items()}
         payload.update(admissions_open='on', admissions_year=2029, admissions_fee='70.00', name='Malicious school rename')
         response = self.client.post('/staff/admissions/settings/', payload)
         self.assertRedirects(response, '/staff/admissions/settings/')

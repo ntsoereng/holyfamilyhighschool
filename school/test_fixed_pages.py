@@ -27,7 +27,7 @@ class FixedPageTests(TestCase):
 
     def payload(self, **changes):
         self.site.refresh_from_db()
-        return {**{name: getattr(self.site, name) for name in SettingsForm._meta.fields
+        return {**{name: ('' if getattr(self.site, name) is None else getattr(self.site, name)) for name in SettingsForm._meta.fields
                    if not isinstance(self.site._meta.get_field(name), models.ImageField)}, **changes}
 
     def image(self):

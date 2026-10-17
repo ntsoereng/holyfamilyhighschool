@@ -120,7 +120,8 @@ class SiteSettings(models.Model):
     admissions_deadline = models.DateField(
         'Application deadline', default=date(2026, 10, 14), null=True, blank=True)
     admissions_interview_date = models.DateField(
-        'Interview date', default=date(2026, 10, 17), null=True, blank=True)
+        'Interview date', null=True, blank=True,
+        help_text='Set the interview date for the current intake. Leave blank until confirmed.')
     admissions_interview_time = models.TimeField('Interview time', default=time(8, 0), null=True, blank=True,
                                                  help_text='Local school time in Lesotho.')
     admissions_interview_location = models.CharField(

@@ -211,7 +211,7 @@ class AdmissionSettingsTests(TestCase):
         self.assertEqual(school.admissions_payment_method.lower(), 'm-pesa')
         self.assertEqual(school.admissions_merchant_number, '5184')
         self.assertEqual(school.admissions_deadline, date(2026, 10, 14))
-        self.assertEqual(school.admissions_interview_date, date(2026, 10, 17))
+        self.assertIsNone(school.admissions_interview_date)
         self.assertEqual(school.admissions_interview_time, time(8, 0))
         self.assertEqual(school.admissions_interview_location, 'Holy Family High School')
         for subject in ['English', 'Sesotho', 'Science', 'Maths']:

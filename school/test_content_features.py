@@ -29,7 +29,7 @@ class ContentFeatureTests(TestCase):
         return SimpleUploadedFile(name, buffer.getvalue(), content_type='image/png')
 
     def settings_data(self, **changes):
-        return {**{name: getattr(self.site, name) for name in SettingsForm._meta.fields
+        return {**{name: ('' if getattr(self.site, name) is None else getattr(self.site, name)) for name in SettingsForm._meta.fields
                    if not isinstance(self.site._meta.get_field(name), models.ImageField)}, **changes}
 
     def test_map_embed_validation(self):

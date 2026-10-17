@@ -137,7 +137,7 @@ class StaffWorkspaceTests(TestCase):
     def test_settings_edit_and_upload(self):
         self.client.force_login(self.editor)
         from .staff_forms import SettingsForm
-        data = {name: getattr(self.site, name) for name in SettingsForm._meta.fields if not isinstance(self.site._meta.get_field(name), models.ImageField)}
+        data = {name: ('' if getattr(self.site, name) is None else getattr(self.site, name)) for name in SettingsForm._meta.fields if not isinstance(self.site._meta.get_field(name), models.ImageField)}
         data['hero_title'] = 'A staff-managed homepage'
         data['about_history'] = '<p>History saved on the first submission.</p>'
         data['curriculum_body'] = '<p>Curriculum saved on the first submission.</p>'
