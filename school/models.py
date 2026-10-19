@@ -457,6 +457,29 @@ class Application(models.Model):
     def __str__(self): return f'{self.learner_name} — {self.entry_level}'
 
 
+class AdmissionRelease(models.Model):
+    year = models.PositiveSmallIntegerField(unique=True, validators=[MinValueValidator(2000), MaxValueValidator(2100)])
+    published = models.BooleanField(default=False)
+    revision = models.UUIDField(default=uuid.uuid4, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-year']
+
+    def __str__(self):
+        return f'{self.year} admission results'
+
+
+class AdmissionResult(models.Model):
+    release = models.ForeignKey(AdmissionRelease, on_delete=models.CASCADE, related_name='results')
+    # Names support partial searches; school distinguishes students with similar names.
+    surname = models.CharField(max_length=80, blank=True, default='')
+    first_names = models.CharField(max_length=120, blank=True, default='')
+    primary_school = models.CharField(max_length=180, blank=True, default='')
+    identity_key = models.CharField(max_length=64, unique=True, editable=False)
+    boarding = models.BooleanField(default=False)
+
+
 class SubmissionAttempt(models.Model):
     ip_hash = models.CharField(max_length=64, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

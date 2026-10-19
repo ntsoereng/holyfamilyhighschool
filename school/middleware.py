@@ -24,6 +24,14 @@ class IndexingHeadersMiddleware:
             pass
         elif not known_public_route or not indexing_enabled(request):
             response['X-Robots-Tag'] = 'noindex, nofollow'
+        if request.path.rstrip('/') in {'/admissions/results', '/staff/admissions/results'}:
+            # Include middleware errors and CSRF failures, not just rendered views.
+            response['Cache-Control'] = 'no-store, private'
+            # no-referrer can make native form POSTs send Origin: null, which
+            # correctly fails Django's CSRF origin check. Keep same-site form
+            # metadata while withholding referrers from external destinations.
+            response['Referrer-Policy'] = 'same-origin'
+            response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
         return response
 
 
@@ -74,15 +82,27 @@ class SubmissionSecurityMiddleware:
         if request.method not in {'POST', 'PUT', 'PATCH', 'DELETE'}:
             return self.get_response(request)
         subject = rate_subject(client_ip(request))
-        public_form = request.path.rstrip('/') in {'/apply', '/contact'}
+        path = request.path.rstrip('/')
+        lookup = path == '/admissions/results'
+        public_form = path in {'/apply', '/contact', '/admissions/results'}
         limits = [('all-form-writes', settings.FORM_WRITE_RATE_PER_MINUTE, 60)]
-        if public_form:
+        if lookup:
+            limits += [('admission-lookup-minute', settings.ADMISSION_LOOKUP_RATE_PER_MINUTE, 60),
+                       ('admission-lookup-hour', settings.ADMISSION_LOOKUP_RATE_PER_HOUR, 3600),
+                       ('admission-lookup-day', settings.ADMISSION_LOOKUP_RATE_PER_DAY, 86400)]
+        elif public_form:
             limits += [('public-forms-daily', settings.PUBLIC_FORM_RATE_PER_DAY, 86400),
                        (f'public-form:{request.path.rstrip("/")}', settings.PUBLIC_FORM_RATE_PER_HOUR, 3600)]
         for scope, limit, seconds in limits:
             retry = consume_limit(subject, scope, limit, seconds)
             if retry:
                 return reject('Too many submission attempts. Please wait before trying again, or contact the school office by phone.', 429, retry)
+        if path == '/staff/admissions/results' and request.method == 'POST':
+            try:
+                if int(request.META.get('CONTENT_LENGTH') or 0) > 2 * 1024 * 1024 + 65536:
+                    return reject('Choose a spreadsheet smaller than 2 MB.', 413)
+            except ValueError:
+                return reject('Invalid upload size.', 413)
         if public_form and request.method == 'POST':
             try:
                 declared_size = int(request.META.get('CONTENT_LENGTH') or 0)

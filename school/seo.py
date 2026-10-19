@@ -90,6 +90,7 @@ def metadata(request):
         'projects': (f'Projects · {school.name}', f'Explore planned, ongoing and completed projects at {school.name}.', None, ''),
         'news': (f'News · {school.name}', f'News, achievements and updates from {school.name}.', None, ''),
         'application-success': (f'Application received · {school.name}', 'Your application has been received. Keep your private reference for follow-up with the school office.', None, ''),
+        'admission-results': (f'Check admission results · {school.name}', 'Search admitted students by surname and select the related primary school to view boarding status.', None, ''),
         'privacy': (f'Privacy Policy · {school.name}', f'How {school.name} uses personal information, protects learner data and handles cookies under Lesotho’s data protection law.', None, ''),
         'donation': (f'Donation · {school.name}', f'Support {school.name} through monetary or in-kind donations. Contact the school to discuss current needs and arrange your contribution.', None, ''),
         'terms': (f'Terms of Use · {school.name}', f'Terms for using the {school.name} website, submitting applications and enquiries, and sharing school and student content.', None, ''),
@@ -175,7 +176,7 @@ def metadata(request):
         if query:
             path += '?' + urlencode(query)
 
-    parent = {'article': 'news', 'school-life-post': 'school-life', 'subject': 'curriculum',
+    parent = {'admission-results': 'apply', 'article': 'news', 'school-life-post': 'school-life', 'subject': 'curriculum',
               'school-department': 'school-staff', 'school-staff-profile': 'school-staff', 'event': 'events', 'announcement': 'announcements', 'project': 'projects'}.get(route, route)
     section = 'school' if parent in {'about', 'curriculum', 'school-staff'} else 'community' if parent in {'news', 'school-life', 'donation', 'announcements', 'projects'} else parent
     return {'seo': {

@@ -110,5 +110,5 @@ def robots_txt(request):
     if not indexing_enabled(request):
         return HttpResponse('User-agent: *\nDisallow: /\n', content_type='text/plain; charset=utf-8')
     lines = ['User-agent: *', 'Allow: /', 'Disallow: /staff/', 'Disallow: /admin/',
-             'Disallow: /tinymce/', 'Disallow: /apply/received/', '', f'Sitemap: {absolute_url(reverse("sitemap"))}', '']
+             'Disallow: /tinymce/', 'Disallow: /apply/received/', 'Disallow: /admissions/results/', '', f'Sitemap: {absolute_url(reverse("sitemap"))}', '']
     return HttpResponse('\n'.join(lines), content_type='text/plain; charset=utf-8')

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'components/page_header.html' with eyebrow='ADMISSIONS' title='Check your admission result' introduction='Find your name and primary school among this year’s admitted students.' %}
+<section class="container section admission-results-layout">
+  <div>
+    {% if outcome %}
+    <section class="hf-card admission-result-notice" role="status" aria-labelledby="result-heading">
+      {% if outcome == 'boarding' or outcome == 'day' %}
+      <p class="eyebrow">{{ result_year }} ADMISSION</p><h2 id="result-heading">{{ selected.surname }}, {{ selected.first_names }}</h2>
+      <p>{{ selected.primary_school }}</p><p><strong>Admitted.</strong></p>
+      <p>Congratulations on your admission! We look forward to welcoming you to {{ school.name }}.</p>
+      {% if outcome == 'boarding' %}<p class="admission-boarding-status admission-boarding-offered">{% include 'components/icon.html' with name='check' %}<strong>Boarding: Offered</strong></p>{% else %}<p class="admission-boarding-status admission-boarding-not-offered"><strong>Boarding: Not offered</strong></p>{% endif %}
+      {% elif outcome == 'matches' %}
+      <h2 id="result-heading">Admitted students · {{ result_year }}</h2>
+      {% for candidate in candidates %}
+      <form method="post" action="{% url 'admission-results' %}" class="admission-candidate-form" autocomplete="off">
+        {% csrf_token %}<input type="hidden" name="action" value="view"><input type="hidden" name="selection" value="{{ candidate.selection }}">
+        <div class="admission-candidate-heading"><h3>{{ candidate.surname }}, {{ candidate.first_names }}</h3><span class="admission-status-badge">{% include 'components/icon.html' with name='check' %}Admitted</span></div>
+        <p>Primary school: <button class="admission-school-link" type="submit" aria-label="View boarding status for {{ candidate.first_names }} {{ candidate.surname }} from {{ candidate.primary_school }}">{{ candidate.primary_school }}</button></p>
+      </form>
+      {% endfor %}
+      {% elif outcome == 'too-many' %}
+      <h2 id="result-heading">Please narrow your search</h2><p>Enter more of the surname or add a first name to find the correct student.</p>
+      {% elif outcome == 'limited' %}
+      <h2 id="result-heading">Please try again later</h2><p>Too many checks. Please wait before trying again or contact the school office.</p>
+      {% else %}
+      <h2 id="result-heading">No matching students found</h2>
+      <p>Check the name, then search again.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+    <form method="post" action="{% url 'admission-results' %}" class="hf-card admission-lookup-form" autocomplete="off">
+      {% csrf_token %}<h2>Find your name{% if result_year %} · {{ result_year }}{% endif %}</h2>
+      {% if form.errors %}<div class="form-error" role="alert">Please check the details below. {{ form.non_field_errors }}</div>{% endif %}
+      {{ form.website }}
+      <div class="application-fields">
+        {% include 'components/public_field.html' with field=form.surname %}
+        {% include 'components/public_field.html' with field=form.first_names %}
+      </div>
+      <button class="button" type="submit">Find my name {% include 'components/icon.html' with name='chevron' %}</button>
+    </form>
+  </div>
+  <aside class="info-panel"><p class="eyebrow">HERE TO HELP</p><h2>Looking for your result?</h2><p>You can enter part of your surname and add a first name to narrow the matches.</p><a class="text-link" href="{% url 'contact' %}">Contact the school office</a><p><a class="text-link" href="{% url 'apply' %}">Admissions information</a></p></aside>
+</section>
+{% endblock %}

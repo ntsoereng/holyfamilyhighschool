@@ -1,5 +1,6 @@
 from django.urls import path
 from . import staff
+from . import admission_views
 
 urlpatterns = [
     path('images/upload/', staff.editor_image_upload, name='staff-image-upload'),
@@ -14,6 +15,8 @@ urlpatterns = [
     path('team/', staff.team, name='staff-team'),
     path('team/<int:pk>/toggle/', staff.toggle_staff, name='staff-toggle-user'),
     path('admissions/settings/', staff.admissions_settings, name='staff-admissions-settings'),
+    path('admissions/results/', admission_views.manage, name='staff-admission-results'),
+    path('admissions/results/template/', admission_views.import_template, name='staff-admission-results-template'),
     path('applications/export/', staff.applications_export, name='staff-applications-export'),
     path('applications/', staff.applications, name='staff-applications'),
     path('applications/<int:pk>/', staff.application_detail, name='staff-application'),

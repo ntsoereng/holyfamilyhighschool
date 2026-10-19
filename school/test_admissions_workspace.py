@@ -42,7 +42,8 @@ class AdmissionsWorkspaceTests(TestCase):
                 self.assertNotContains(response, text)
         self.assertEqual(Application.objects.count(), 24)
         response = self.client.get('/')
-        self.assertContains(response, '>Admissions</a></div></details>')
+        self.assertContains(response, '>Admissions</a>')
+        self.assertContains(response, 'href="/admissions/results/"')
 
     def test_office_can_update_only_admissions_settings(self):
         self.client.force_login(self.office)

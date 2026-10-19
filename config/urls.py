@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from school import views
+from school import admission_views
 from school.sitemaps import sitemap_view, robots_txt
 urlpatterns = [
     path('sitemap.xml', sitemap_view, name='sitemap'), path('robots.txt', robots_txt, name='robots-txt'),
@@ -24,6 +25,7 @@ urlpatterns = [
     path('news/<slug:slug>/', views.article, name='article'),
     path('events/', views.events, name='events'), path('events/<slug:slug>/', views.event, name='event'),
     path('apply/', views.apply, name='apply'), path('apply/received/', views.application_success, name='application-success'),
+    path('admissions/results/', admission_views.lookup, name='admission-results'),
     path('contact/', views.contact, name='contact'), path('privacy/', views.privacy, name='privacy'),
     path('terms/', views.terms, name='terms'),
     path('donation/', views.donation, name='donation'),

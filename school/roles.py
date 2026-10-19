@@ -18,11 +18,12 @@ STAFF_ROLES = (
         'name': 'Admissions officers',
         'label': 'School office — admissions and messages',
         'icon': 'mail',
-        'models': ('application', 'contactmessage'),
+        'models': ('application', 'contactmessage', 'admissionrelease'),
         'extra_permissions': ('change_admissions_settings',),
         'summary': 'Handles admissions settings, private applications and enquiries.',
         'powers': (
             'Open or close admissions and update intake, payment and interview settings.',
+            'Upload, publish, withdraw and delete annual admission results in bulk.',
             'View, search and export applications to Excel, update their review status and add private staff notes.',
             'View and search contact messages, update their status and add private staff notes.',
             'Permanently delete applications and contact messages when authorised under the school’s recordkeeping policy.',

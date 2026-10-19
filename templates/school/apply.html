@@ -7,6 +7,7 @@
 {% include 'components/page_header.html' with eyebrow='ADMISSIONS' title=school.admissions_heading|default:'Admissions' introduction=school.admissions_text image=school.admissions_image image_alt=school.admissions_image_alt %}
 
 {% else %}{% include 'components/page_header.html' with title='Admissions' %}{% endif %}
+<nav class="container admission-subnav" aria-label="Admissions"><a class="text-link" href="{% url 'admission-results' %}">Check your admission result <span aria-hidden="true">→</span></a></nav>
 {% if school.admissions_open %}
 <section class="hf-soft-section">
   <div class="container application-layout section">
