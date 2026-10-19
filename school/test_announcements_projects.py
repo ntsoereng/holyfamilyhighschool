@@ -70,6 +70,22 @@ class AnnouncementsProjectsTests(TestCase):
         first = Project.objects.create(title='Priority project', excerpt='Priority', body='<p>Details</p>', published=True, order=0)
         self.assertEqual(list(Project.objects.live())[:2], [first, self.project])
 
+    def test_emoji_content_survives_save_and_public_rendering(self):
+        for model, route in [(Announcement, 'announcement'), (Project, 'project')]:
+            with self.subTest(model=model.__name__):
+                item = model.objects.create(
+                    title='📢 School update', excerpt='📚 News for families',
+                    body='<p>Welcome 🎉</p>', published=True,
+                )
+                item.refresh_from_db()
+                self.assertEqual(item.title, '📢 School update')
+                self.assertEqual(item.excerpt, '📚 News for families')
+                self.assertEqual(item.body, '<p>Welcome 🎉</p>')
+                response = self.client.get(reverse(route, args=[item.slug]))
+                self.assertContains(response, item.title)
+                self.assertContains(response, item.excerpt)
+                self.assertContains(response, item.body, html=True)
+
     def test_expiry_validation_and_slugs_are_automatic_stable_and_unique(self):
         form = AnnouncementForm({'title': 'Invalid expiry', 'excerpt': 'Summary', 'body': '<p>Body</p>',
                                  'published_at': self.now, 'expires_at': self.now - timedelta(hours=1)})
