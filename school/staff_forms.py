@@ -77,9 +77,9 @@ class SettingsForm(forms.ModelForm):
                       'hero_image_alt': 'Describe the homepage photograph for visitors using a screen reader.'}
         fields = ['name', 'motto', 'logo', 'hero_eyebrow', 'hero_title', 'hero_text', 'hero_image', 'hero_image_alt',
                   'footer_text', 'contact_heading', 'contact_text', 'facebook_url', 'statistics_title', 'statistics_text', 'about_title', 'about_text', 'address', 'office_hours', 'email', 'phone', 'google_maps_embed_url', 'admissions_open',
-                  'admissions_heading', 'admissions_text', 'admissions_requirements', 'privacy_text', 'demo_mode', 'about_heading', 'about_intro', 'about_history', 'about_mission', 'about_vision', 'curriculum_heading', 'curriculum_intro', 'curriculum_body', 'staff_heading', 'staff_intro', 'calendar_heading', 'calendar_intro', 'about_image', 'about_image_alt', 'curriculum_image', 'curriculum_image_alt', 'staff_image', 'staff_image_alt', 'calendar_image', 'calendar_image_alt', 'contact_image', 'contact_image_alt', 'admissions_image', 'admissions_image_alt'] + ADMISSIONS_CYCLE_FIELDS
+                  'admissions_heading', 'admissions_text', 'admissions_requirements', 'about_heading', 'about_intro', 'about_history', 'about_mission', 'about_vision', 'curriculum_heading', 'curriculum_intro', 'curriculum_body', 'staff_heading', 'staff_intro', 'calendar_heading', 'calendar_intro', 'about_image', 'about_image_alt', 'curriculum_image', 'curriculum_image_alt', 'staff_image', 'staff_image_alt', 'calendar_image', 'calendar_image_alt', 'contact_image', 'contact_image_alt', 'admissions_image', 'admissions_image_alt'] + ADMISSIONS_CYCLE_FIELDS
         widgets = {name: forms.Textarea(attrs={'rows': 4}) for name in
-                   ['hero_text', 'about_text', 'address', 'admissions_text', 'admissions_requirements', 'privacy_text', 'about_intro', 'about_mission', 'about_vision', 'curriculum_intro', 'staff_intro', 'calendar_intro', 'admissions_interview_subjects', 'admissions_stationery_note']} | {name: forms.Textarea(attrs={'class': 'rich-editor'}) for name in ['about_history', 'curriculum_body']} | {
+                   ['hero_text', 'about_text', 'address', 'admissions_text', 'admissions_requirements', 'about_intro', 'about_mission', 'about_vision', 'curriculum_intro', 'staff_intro', 'calendar_intro', 'admissions_interview_subjects', 'admissions_stationery_note']} | {name: forms.Textarea(attrs={'class': 'rich-editor'}) for name in ['about_history', 'curriculum_body']} | {
                        name: forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'})
                        for name in ['admissions_deadline', 'admissions_interview_date']} | {
                        'admissions_interview_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'})}
@@ -122,7 +122,6 @@ class SettingsForm(forms.ModelForm):
             ('School statistics', ['statistics_title', 'statistics_text']),
             ('Admissions', ['admissions_open', 'admissions_heading', 'admissions_text', 'admissions_image', 'admissions_image_alt', 'admissions_requirements']),
             ('Admissions cycle & interview details', ADMISSIONS_CYCLE_FIELDS),
-            ('Privacy & demonstration', ['privacy_text', 'demo_mode']),
         ]
         return [(title, [self[name] for name in names if name in self.fields])
                 for title, names in groups if any(name in self.fields for name in names)]

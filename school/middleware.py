@@ -32,6 +32,14 @@ class IndexingHeadersMiddleware:
             # metadata while withholding referrers from external destinations.
             response['Referrer-Policy'] = 'same-origin'
             response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
+        if request.path.startswith(('/prospectus/', '/staff/admissions/prospectus/')):
+            # Include revoked/missing file errors and middleware/CSRF failures.
+            response['Cache-Control'] = 'no-store, private'
+            response['Referrer-Policy'] = 'same-origin'
+            response['X-Content-Type-Options'] = 'nosniff'
+            if match and match.url_name in {'prospectus-page', 'prospectus-download'}:
+                response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
+                response['Content-Security-Policy'] = "default-src 'none'; sandbox"
         return response
 
 
@@ -101,6 +109,12 @@ class SubmissionSecurityMiddleware:
             try:
                 if int(request.META.get('CONTENT_LENGTH') or 0) > 2 * 1024 * 1024 + 65536:
                     return reject('Choose a spreadsheet smaller than 2 MB.', 413)
+            except ValueError:
+                return reject('Invalid upload size.', 413)
+        if path == '/staff/admissions/prospectus' and request.method == 'POST':
+            try:
+                if not 0 <= int(request.META.get('CONTENT_LENGTH') or 0) <= 8 * 1024 * 1024 + 65536:
+                    return reject('Choose a PDF no larger than 8 MB.', 413)
             except ValueError:
                 return reject('Invalid upload size.', 413)
         if public_form and request.method == 'POST':

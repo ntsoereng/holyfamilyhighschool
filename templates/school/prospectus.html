@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'components/page_header.html' with eyebrow='OUR SCHOOL' title='School prospectus' introduction='Get to know Holy Family and prepare for school.' %}
+<section class="container section prospectus-section">
+{% if document %}
+  <div class="prospectus-document">
+  <p class="prospectus-meta">{{ document.page_count }} page{{ document.page_count|pluralize }} · Updated {{ document.updated_at|date:'j F Y' }}</p>
+  <div class="prospectus-viewer" aria-label="School prospectus pages">
+  {% for page in pages %}
+    <figure class="prospectus-page"><img src="{% url 'prospectus-page' document.revision page.number %}" alt="School prospectus, page {{ page.number }}" width="{{ page.width }}" height="{{ page.height }}" loading="lazy" decoding="async"><figcaption>Page {{ page.number }} of {{ document.page_count }}</figcaption>
+    </figure>
+  {% endfor %}
+  </div>
+  <a class="button prospectus-download" href="{% url 'prospectus-download' document.revision %}">{% include 'components/icon.html' with name='document' %} Download PDF</a>
+  </div>
+{% else %}
+  <div class="hf-card prospectus-pending"><span class="icon-tile">{% include 'components/icon.html' with name='book' %}</span><h2>Coming soon</h2><p>The prospectus will be uploaded soon.</p></div>
+{% endif %}
+</section>
+{% endblock %}

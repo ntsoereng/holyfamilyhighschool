@@ -145,6 +145,7 @@ class AdmissionResultsWorkflowTests(TestCase):
         response = self.view_result()
         self.assertContains(response, 'Admitted.')
         self.assertContains(response, 'Boarding: Offered')
+        self.assertContains(response, 'Read the prospectus to prepare for school')
         self.assertContains(response, ROW[1])
         self.assertContains(response, ROW[2])
         self.assertContains(response, ROW[3])

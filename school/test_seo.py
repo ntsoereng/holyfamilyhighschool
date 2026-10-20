@@ -125,6 +125,8 @@ class SearchMetadataTests(TestCase):
             ('/our-staff/', f'Our staff · {self.school.name}', self.school.staff_intro),
             ('/events/', f'Calendar · {self.school.name}', self.school.calendar_intro),
             ('/apply/', f'Admissions · {self.school.name}', self.school.admissions_text),
+            ('/prospectus/', f'Prospectus · {self.school.name}', f'Read or download the {self.school.name} prospectus and prepare for school.'),
+            ('/privacy/', f'Privacy Policy · {self.school.name}', f'How {self.school.name} uses personal information, handles applications, admission searches, prospectus access and essential cookies.'),
         ]:
             with self.subTest(path=path):
                 metadata = self.metadata(self.client.get(path))
@@ -283,7 +285,7 @@ class SearchDiscoveryTests(TestCase):
         urls = self.sitemap_urls(response)
         public_paths = {
             '/', '/about/', '/contact/', '/curriculum/', '/our-staff/', '/events/',
-            '/apply/', '/news/', '/school-life/', '/privacy/', '/terms/', '/donation/', '/announcements/', '/projects/',
+            '/apply/', '/news/', '/school-life/', '/privacy/', '/terms/', '/donation/', '/announcements/', '/projects/', '/prospectus/',
             reverse('article', kwargs={'slug': self.article.slug}),
             reverse('event', kwargs={'slug': self.past_event.slug}),
             reverse('event', kwargs={'slug': self.future_event.slug}),

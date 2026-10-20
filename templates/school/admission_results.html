@@ -10,6 +10,7 @@
       <p>{{ selected.primary_school }}</p><p><strong>Admitted.</strong></p>
       <p>Congratulations on your admission! We look forward to welcoming you to {{ school.name }}.</p>
       {% if outcome == 'boarding' %}<p class="admission-boarding-status admission-boarding-offered">{% include 'components/icon.html' with name='check' %}<strong>Boarding: Offered</strong></p>{% else %}<p class="admission-boarding-status admission-boarding-not-offered"><strong>Boarding: Not offered</strong></p>{% endif %}
+      <p><a class="text-link" href="{% url 'prospectus' %}">Read the prospectus to prepare for school {% include 'components/icon.html' with name='chevron' %}</a></p>
       {% elif outcome == 'matches' %}
       <h2 id="result-heading">Admitted students · {{ result_year }}</h2>
       {% for candidate in candidates %}

@@ -1,8 +1,11 @@
 from django.urls import path
 from . import staff
 from . import admission_views
+from . import prospectus_views
 
 urlpatterns = [
+    path('admissions/prospectus/', prospectus_views.manage, name='staff-prospectus'),
+    path('admissions/prospectus/<uuid:revision>/pages/<int:number>/', prospectus_views.preview_image, name='staff-prospectus-page'),
     path('images/upload/', staff.editor_image_upload, name='staff-image-upload'),
     path('messages/', staff.contact_messages, name='staff-messages'),
     path('messages/<int:pk>/', staff.contact_message, name='staff-message'),

@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import path, include
 from school import views
 from school import admission_views
+from school import prospectus_views
 from school.sitemaps import sitemap_view, robots_txt
 urlpatterns = [
     path('sitemap.xml', sitemap_view, name='sitemap'), path('robots.txt', robots_txt, name='robots-txt'),
@@ -26,6 +27,9 @@ urlpatterns = [
     path('events/', views.events, name='events'), path('events/<slug:slug>/', views.event, name='event'),
     path('apply/', views.apply, name='apply'), path('apply/received/', views.application_success, name='application-success'),
     path('admissions/results/', admission_views.lookup, name='admission-results'),
+    path('prospectus/', prospectus_views.prospectus, name='prospectus'),
+    path('prospectus/<uuid:revision>/pages/<int:number>/', prospectus_views.page_image, name='prospectus-page'),
+    path('prospectus/<uuid:revision>/download/', prospectus_views.download, name='prospectus-download'),
     path('contact/', views.contact, name='contact'), path('privacy/', views.privacy, name='privacy'),
     path('terms/', views.terms, name='terms'),
     path('donation/', views.donation, name='donation'),

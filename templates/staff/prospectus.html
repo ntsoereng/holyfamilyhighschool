@@ -1,0 +1,22 @@
+{% extends 'staff/base.html' %}
+{% block title %}Prospectus{% endblock %}
+{% block content %}
+<div class="workspace-heading"><div><p class="eyebrow">ADMISSIONS</p><h1>School prospectus</h1><p>Upload the prospectus, review its pages and publish when ready.</p></div><a class="text-link" href="{% url 'prospectus' %}" target="_blank" rel="noopener">View public page</a></div>
+{% if action_error %}<div class="form-error" role="alert">{{ action_error }}</div>{% endif %}
+{% if perms.school.add_prospectus and perms.school.change_prospectus and perms.school.delete_prospectus %}
+<form method="post" enctype="multipart/form-data" class="staff-panel staff-form">
+  {% csrf_token %}<input type="hidden" name="action" value="upload"><h2>Upload PDF</h2>
+  <p>Choose an unlocked PDF of up to 8 MB and 40 pages. The website prepares read-only pages and a flattened PDF for download.</p>
+  <p><strong>A new upload replaces the existing prospectus and stays hidden until published.</strong></p>
+  {% if form.errors %}<div class="form-error" role="alert">The prospectus has not been changed. {{ form.non_field_errors }}</div>{% endif %}
+  {% include 'staff/fields.html' %}<button class="button" type="submit">Upload and prepare prospectus</button>
+</form>
+{% endif %}
+{% if document %}
+<section class="staff-panel"><h2>Current prospectus</h2><p>{{ document.page_count }} page{{ document.page_count|pluralize }} · {% if document.published %}Published{% else %}Hidden{% endif %} · Updated {{ document.updated_at|date:'j M Y, H:i' }}</p>
+{% if perms.school.change_prospectus %}<form method="post">{% csrf_token %}<input type="hidden" name="revision" value="{{ document.revision }}"><button class="button" type="submit" name="action" value="{% if document.published %}unpublish{% else %}publish{% endif %}">{% if document.published %}Withdraw prospectus{% else %}Publish prospectus{% endif %}</button></form>{% endif %}
+<details class="prospectus-preview"><summary>Review the prepared pages</summary><div class="prospectus-viewer">{% for page in pages %}<figure class="prospectus-page"><img src="{% url 'staff-prospectus-page' document.revision page.number %}" alt="Prospectus preview, page {{ page.number }}" width="{{ page.width }}" height="{{ page.height }}" loading="lazy"><figcaption>Page {{ page.number }} of {{ document.page_count }}</figcaption></figure>{% endfor %}</div></details>
+{% if perms.school.delete_prospectus %}<details><summary>Delete prospectus</summary><p>Permanently delete the prospectus and all its prepared pages?</p><form method="post">{% csrf_token %}<input type="hidden" name="revision" value="{{ document.revision }}"><button class="danger-button" type="submit" name="action" value="delete">Permanently delete prospectus</button></form></details>{% endif %}
+</section>
+{% else %}<section class="staff-panel"><h2>No prospectus uploaded</h2><p>The public page says that the prospectus will be uploaded soon.</p></section>{% endif %}
+{% endblock %}

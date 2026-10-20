@@ -457,6 +457,35 @@ class Application(models.Model):
     def __str__(self): return f'{self.learner_name} — {self.entry_level}'
 
 
+class Prospectus(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    published = models.BooleanField(default=False)
+    revision = models.UUIDField(default=uuid.uuid4, editable=False)
+    pdf = models.BinaryField(default=b'', editable=False)
+    page_count = models.PositiveSmallIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'prospectuses'
+        constraints = [models.CheckConstraint(condition=models.Q(pk=1), name='one_school_prospectus')]
+
+    def __str__(self):
+        return 'School prospectus'
+
+
+class ProspectusPage(models.Model):
+    prospectus = models.ForeignKey(Prospectus, related_name='pages', on_delete=models.CASCADE)
+    number = models.PositiveSmallIntegerField()
+    width = models.PositiveSmallIntegerField()
+    height = models.PositiveSmallIntegerField()
+    image = models.BinaryField(editable=False)
+    text = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['number']
+        constraints = [models.UniqueConstraint(fields=['prospectus', 'number'], name='unique_prospectus_page')]
+
+
 class AdmissionRelease(models.Model):
     year = models.PositiveSmallIntegerField(unique=True, validators=[MinValueValidator(2000), MaxValueValidator(2100)])
     published = models.BooleanField(default=False)
