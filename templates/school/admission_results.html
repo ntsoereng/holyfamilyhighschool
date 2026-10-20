@@ -23,6 +23,8 @@
       <h2 id="result-heading">Please narrow your search</h2><p>Enter more of the surname or add a first name to find the correct student.</p>
       {% elif outcome == 'limited' %}
       <h2 id="result-heading">Please try again later</h2><p>Too many checks. Please wait before trying again or contact the school office.</p>
+      {% elif outcome == 'expired' %}
+      <h2 id="result-heading">Please search again</h2><p>This result has expired or is no longer available.</p>
       {% else %}
       <h2 id="result-heading">No matching students found</h2>
       <p>Check the name, then search again.</p>
@@ -32,6 +34,7 @@
     <form method="post" action="{% url 'admission-results' %}" class="hf-card admission-lookup-form" autocomplete="off">
       {% csrf_token %}<h2>Find your name{% if result_year %} · {{ result_year }}{% endif %}</h2>
       {% if form.errors %}<div class="form-error" role="alert">Please check the details below. {{ form.non_field_errors }}</div>{% endif %}
+      {% if lookup_errors %}<div class="form-error" role="alert"><p>Please check your search details.</p><ul>{% for error in lookup_errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
       {{ form.website }}
       <div class="application-fields">
         {% include 'components/public_field.html' with field=form.surname %}

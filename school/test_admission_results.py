@@ -1,5 +1,6 @@
 import csv
 import sys
+import time
 from io import BytesIO, StringIO
 from unittest.mock import patch
 from zipfile import ZipFile
@@ -14,7 +15,8 @@ from django.urls import reverse
 from django.views.debug import ExceptionReporter
 from openpyxl import Workbook
 
-from .admission_results import HEADERS, MAX_UPLOAD_BYTES, identity_key, read_results, selection_token
+from .admission_results import HEADERS, MAX_UPLOAD_BYTES, SELECTION_SALT, identity_key, read_results, selection_token
+from .admission_receipts import MAX_RECEIPTS, SESSION_KEY
 from .models import AdmissionRelease, AdmissionResult, SiteSettings, SubmissionThrottle
 
 ROW = [2027, 'Mokoena', 'Thabo James', 'St Mary’s Primary', 'Y']
@@ -121,13 +123,13 @@ class AdmissionResultsWorkflowTests(TestCase):
     def search(self, **changes):
         data = {'surname': ROW[1], 'first_names': ROW[2]}
         data.update(changes)
-        return self.client.post(reverse('admission-results'), data)
+        return self.client.post(reverse('admission-results'), data, follow=True)
 
     def view_result(self, result=None, **changes):
         result = result or AdmissionResult.objects.select_related('release').get(identity_key=identity_key(*ROW[:4]))
         data = {'action': 'view', 'selection': selection_token(result)}
         data.update(changes)
-        return self.client.post(reverse('admission-results'), data)
+        return self.client.post(reverse('admission-results'), data, follow=True)
 
     def staff_action(self, action, **changes):
         self.release.refresh_from_db()
@@ -151,7 +153,8 @@ class AdmissionResultsWorkflowTests(TestCase):
         self.assertNotContains(response, 'next steps')
         self.assertNotContains(response, self.result.identity_key)
         self.assertNotIn('Location', response)
-        self.assertFalse(any('result' in key for key in self.client.session.keys()))
+        for value in ROW[1:4]:
+            self.assertNotIn(value, str(dict(self.client.session)))
         self.result.boarding = False
         self.result.save()
         self.assertContains(self.view_result(), 'Boarding: Not offered')
@@ -180,6 +183,109 @@ class AdmissionResultsWorkflowTests(TestCase):
         self.assertNotContains(response, 'Boarding:')
         self.assertEqual(self.client.put(reverse('admission-results')).status_code, 405)
 
+    def test_search_redirects_to_browser_bound_get_without_personal_data_in_url_or_session(self):
+        path = reverse('admission-results')
+        response = self.client.post(path, {'surname': ROW[1], 'first_names': ROW[2]})
+        self.assertEqual(response.status_code, 303)
+        location = response['Location']
+        self.assertRegex(location, r'^/admissions/results/\?r=[A-Za-z0-9_-]{32}$')
+        self.assertIn('no-store', response['Cache-Control'])
+        session_data = str(dict(self.client.session))
+        for value in ROW[1:4]:
+            self.assertNotIn(value, location)
+            self.assertNotIn(value, session_data)
+        self.assertContains(self.client.get(location), ROW[2])
+        other_browser = Client()
+        response = other_browser.get(location)
+        self.assertEqual(response.status_code, 410)
+        self.assertNotContains(response, ROW[2], status_code=410)
+        self.assertNotContains(response, ROW[3], status_code=410)
+
+    def test_refresh_and_back_reload_gets_without_resubmitting_or_consuming_quota(self):
+        search_response = self.search()
+        search_url = search_response.redirect_chain[-1][0]
+        detail_response = self.view_result()
+        detail_url = detail_response.redirect_chain[-1][0]
+        self.assertEqual(search_response.redirect_chain[-1][1], 303)
+        self.assertEqual(detail_response.redirect_chain[-1][1], 303)
+        counts_before = dict(SubmissionThrottle.objects.values_list('key', 'count'))
+        with patch('school.admission_views.consume_limit', side_effect=AssertionError('GET must not resubmit')):
+            for _ in range(3):
+                response = self.client.get(search_url)
+                self.assertContains(response, ROW[2])
+                self.assertNotContains(response, 'Boarding: Offered')
+                self.assertContains(self.client.get(detail_url), 'Boarding: Offered')
+        self.assertEqual(dict(SubmissionThrottle.objects.values_list('key', 'count')), counts_before)
+
+    def test_receipts_expire_and_head_does_not_consume_or_extend_them(self):
+        response = self.search()
+        location = response.redirect_chain[-1][0]
+        receipts_before = self.client.session[SESSION_KEY]
+        self.assertEqual(self.client.head(location).status_code, 200)
+        self.assertEqual(self.client.session[SESSION_KEY], receipts_before)
+        with patch('school.admission_receipts.time.time', return_value=time.time() + 601):
+            response = self.client.get(location)
+        self.assertEqual(response.status_code, 410)
+        self.assertNotContains(response, ROW[2], status_code=410)
+        self.assertFalse(self.client.session.get(SESSION_KEY))
+
+    def test_redirected_results_disappear_when_release_is_withdrawn(self):
+        response = self.view_result()
+        location = response.redirect_chain[-1][0]
+        self.release.published = False
+        self.release.save()
+        response = self.client.get(location)
+        self.assertEqual(response.status_code, 410)
+        self.assertNotContains(response, 'Boarding:', status_code=410)
+
+    def test_redirected_search_disappears_when_release_is_replaced_or_superseded(self):
+        response = self.search()
+        location = response.redirect_chain[-1][0]
+        import uuid
+        self.release.revision = uuid.uuid4()
+        self.release.save()
+        self.assertEqual(self.client.get(location).status_code, 410)
+        response = self.search()
+        location = response.redirect_chain[-1][0]
+        AdmissionRelease.objects.create(year=2028, published=True)
+        self.assertEqual(self.client.get(location).status_code, 410)
+
+    def test_redirected_detail_reads_current_record_and_rejects_deleted_records(self):
+        response = self.view_result()
+        location = response.redirect_chain[-1][0]
+        self.result.boarding = False
+        self.result.save()
+        self.assertContains(self.client.get(location), 'Boarding: Not offered')
+        self.result.delete()
+        self.assertEqual(self.client.get(location).status_code, 410)
+
+    def test_invalid_search_redirects_with_errors_without_retaining_submitted_values(self):
+        response = self.client.post(reverse('admission-results'), {'surname': '', 'first_names': 'Private Search Text'})
+        self.assertEqual(response.status_code, 303)
+        self.assertNotIn('Private Search Text', str(dict(self.client.session)))
+        response = self.client.get(response['Location'])
+        self.assertContains(response, 'Surname: This field is required.')
+        self.assertNotContains(response, 'Private Search Text')
+
+    def test_receipt_history_is_bounded_for_multiple_searches_and_tabs(self):
+        first_url = self.search().redirect_chain[-1][0]
+        for _ in range(MAX_RECEIPTS):
+            response = self.search()
+        self.assertEqual(len(self.client.session[SESSION_KEY]), MAX_RECEIPTS)
+        self.assertEqual(self.client.get(first_url).status_code, 410)
+        self.assertContains(self.client.get(response.redirect_chain[-1][0]), ROW[2])
+
+    @override_settings(ADMISSION_SEARCH_RATE_PER_DAY=1)
+    def test_query_limit_redirects_to_private_429_and_refresh_keeps_the_limit(self):
+        self.search()
+        response = self.client.post(reverse('admission-results'), {'surname': ROW[1], 'first_names': ROW[2]})
+        self.assertEqual(response.status_code, 303)
+        for _ in range(2):
+            page = self.client.get(response['Location'])
+            self.assertEqual(page.status_code, 429)
+            self.assertIn('Retry-After', page)
+            self.assertIn('no-store', page['Cache-Control'])
+
     @override_settings(ADMISSION_LOOKUP_RATE_PER_MINUTE=3)
     def test_invalid_csrf_attempts_are_limited_before_lookup(self):
         client = Client(enforce_csrf_checks=True)
@@ -207,7 +313,7 @@ class AdmissionResultsWorkflowTests(TestCase):
                     'csrfmiddlewaretoken': client.cookies['csrftoken'].value,
                     'year': ROW[0], 'surname': ROW[1], 'first_names': ROW[2],
                     'primary_school': ROW[3], 'own_details': 'on',
-                }, secure=secure, **headers)
+                }, secure=secure, follow=True, **headers)
                 self.assertContains(response, 'Admitted students ·')
                 self.assertNotContains(response, 'Boarding: Offered')
 
@@ -263,7 +369,7 @@ class AdmissionResultsWorkflowTests(TestCase):
         self.assertFalse(SubmissionThrottle.objects.filter(key__contains='Mokoena').exists())
         SubmissionThrottle.objects.all().delete()
         for n in range(3):
-            response = self.client.post(reverse('admission-results'), {}, HTTP_X_FORWARDED_FOR=f'192.0.2.{n}')
+            response = self.client.post(reverse('admission-results'), {}, follow=True, HTTP_X_FORWARDED_FOR=f'192.0.2.{n}')
             self.assertEqual(response.status_code, 200)
         self.assertEqual(self.search().status_code, 429)
 
@@ -347,7 +453,7 @@ class AdmissionResultsWorkflowTests(TestCase):
         matches = self.search(surname='Mok', first_names='')
         candidate = next(item for item in matches.context['candidates'] if item['primary_school'] == other.primary_school)
         response = self.client.post(reverse('admission-results'), {
-            'action': 'view', 'selection': candidate['selection']})
+            'action': 'view', 'selection': candidate['selection']}, follow=True)
         self.assertContains(response, 'St Monicas')
         self.assertContains(response, 'Boarding: Not offered')
         self.assertNotContains(response, 'Boarding: Offered')
@@ -360,7 +466,14 @@ class AdmissionResultsWorkflowTests(TestCase):
         response = self.view_result(selection=token + 'invalid')
         self.assertNotContains(response, 'Boarding:')
         from django.core import signing
-        with patch('school.admission_views.signing.loads', side_effect=signing.SignatureExpired()):
+        original_loads = signing.loads
+
+        def expired_selection(value, *args, **kwargs):
+            if kwargs.get('salt') == SELECTION_SALT:
+                raise signing.SignatureExpired()
+            return original_loads(value, *args, **kwargs)
+
+        with patch('school.admission_views.signing.loads', side_effect=expired_selection):
             self.assertNotContains(self.view_result(selection=token), 'Boarding:')
         import uuid
         self.release.revision = uuid.uuid4()

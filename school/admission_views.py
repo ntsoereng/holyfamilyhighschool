@@ -1,6 +1,7 @@
 """Bulk staff workflow, bounded admitted-student search and boarding details."""
 import csv
 import uuid
+import time
 
 from django.contrib import messages
 from django.conf import settings
@@ -19,6 +20,7 @@ from django.views.decorators.http import require_http_methods, require_safe
 from .admission_results import (HEADERS, MAX_MATCHES, SELECTION_MAX_AGE, SELECTION_SALT,
     SelectionForm, ImportForm, LookupForm, ReleaseActionForm, selection_token)
 from .models import AdmissionRelease, AdmissionResult
+from .admission_receipts import read_receipt, redirect_to_receipt
 from .staff import audit, require_permission, staff_required
 from .submissions import consume_limit
 
@@ -48,6 +50,41 @@ def lookup(request):
     year = release.year if release else None
     status = 200
     retry = 0
+    errors = []
+    if request.method in {'GET', 'HEAD'} and 'r' in request.GET:
+        state = read_receipt(request, request.GET.get('r', ''))
+        if (not state or state['release_id'] != (release.pk if release else None)
+                or state['revision'] != (str(release.revision) if release else None)):
+            outcome, status = 'expired', 410
+        else:
+            outcome = state['outcome']
+            errors = state.get('errors', [])
+            retry = max(0, state.get('retry_until', 0) - int(time.time()))
+            if outcome in {'matches', 'detail'}:
+                # Revalidate signed references and current publication on every GET.
+                # Nothing is served from a cached copy of names or boarding status.
+                results = []
+                try:
+                    for token in state['selections']:
+                        selection = signing.loads(token, salt=SELECTION_SALT, max_age=SELECTION_MAX_AGE)
+                        result = AdmissionResult.objects.select_related('release').filter(
+                            pk=selection['result'], release_id=release.pk,
+                            release__year=selection['year'], release__revision=selection['revision'],
+                            release__published=True).first()
+                        if not result or not all((result.surname, result.first_names, result.primary_school)):
+                            raise signing.BadSignature('Result is no longer available')
+                        results.append((result, token))
+                except (signing.BadSignature, KeyError, TypeError, ValueError, AttributeError):
+                    outcome, status = 'expired', 410
+                else:
+                    if outcome == 'detail' and len(results) == 1:
+                        selected = results[0][0]
+                        outcome = 'boarding' if selected.boarding else 'day'
+                    elif outcome == 'matches' and 0 < len(results) <= MAX_MATCHES:
+                        candidates = [{'surname': result.surname, 'first_names': result.first_names,
+                            'primary_school': result.primary_school, 'selection': token} for result, token in results]
+                    else:
+                        outcome, status = 'expired', 410
     if selecting:
         selection_form = SelectionForm(request.POST)
         outcome = 'no-match'
@@ -91,8 +128,25 @@ def lookup(request):
     if retry:
         status = 429
         outcome = 'limited'
+    if request.method == 'POST':
+        # Validation messages are retained, but submitted name values are discarded.
+        if form.is_bound and form.errors:
+            for field, messages_for_field in form.errors.items():
+                label = ''
+                if field in form.fields:
+                    label = form.fields[field].label or field.replace('_', ' ').title()
+                errors.extend(f'{label}: {message}' if label else str(message) for message in messages_for_field)
+        return redirect_to_receipt(request, {
+            'release_id': release.pk if release else None,
+            'revision': str(release.revision) if release else None,
+            'outcome': 'detail' if selected else outcome,
+            'selections': [selection_token(selected)] if selected else [candidate['selection'] for candidate in candidates],
+            'errors': errors,
+            'retry_until': int(time.time()) + retry if retry else 0,
+        })
     response = render(request, 'school/admission_results.html', {
-        'form': form, 'outcome': outcome, 'candidates': candidates, 'selected': selected, 'result_year': year}, status=status)
+        'form': form, 'outcome': outcome, 'candidates': candidates, 'selected': selected,
+        'result_year': year, 'lookup_errors': errors}, status=status)
     response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
     if retry:
         response['Retry-After'] = str(retry)
