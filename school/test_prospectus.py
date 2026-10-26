@@ -7,8 +7,9 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Group, Permission, User
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.handlers.wsgi import WSGIHandler
 from django.core.management import call_command
-from django.test import Client, SimpleTestCase, TestCase, override_settings
+from django.test import Client, RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 from reportlab.pdfgen import canvas
@@ -127,11 +128,16 @@ class ProspectusWorkflowTests(TestCase):
         self.assertEqual(image['Content-Security-Policy'], "default-src 'none'; sandbox")
         self.assertEqual(Image.open(BytesIO(image.content)).format, 'JPEG')
         response = self.client.get(reverse('prospectus-download', args=[self.document.revision]))
-        data = b''.join(response.streaming_content)
+        data = response.content
         self.assertEqual(data, self.prepared['pdf'])
         self.assertIn('attachment;', response['Content-Disposition'])
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertIn('no-store', response['Cache-Control'])
+
+        head = self.client.head(reverse('prospectus-download', args=[self.document.revision]))
+        self.assertEqual(head.status_code, 200)
+        self.assertEqual(head.content, b'')
+        self.assertEqual(int(head['Content-Length']), len(data))
 
     def test_concurrent_replacement_cannot_leak_unpublished_page_text(self):
         self.publish()
@@ -143,6 +149,32 @@ class ProspectusWorkflowTests(TestCase):
         with patch('school.prospectus_views.current_prospectus', return_value=stale):
             response = self.client.get(reverse('prospectus'))
         self.assertNotContains(response, 'PRIVATE DRAFT CONTENT')
+
+    def test_download_works_with_wsgi_wrapper_requiring_file_descriptor(self):
+        self.publish()
+        path = reverse('prospectus-download', args=[self.document.revision])
+
+        def file_wrapper(file, block_size):
+            # Some production WSGI wrappers require a real OS file descriptor.
+            file.fileno()
+            return iter(lambda: file.read(block_size), b'')
+
+        environ = RequestFactory().get(path).environ
+        environ['wsgi.file_wrapper'] = file_wrapper
+        started = []
+        response = WSGIHandler()(environ, lambda status, headers: started.append((status, dict(headers))))
+        try:
+            data = b''.join(response)
+        finally:
+            response.close()
+        status, headers = started[0]
+        self.assertEqual(status, '200 OK')
+        self.assertEqual(data, self.prepared['pdf'])
+        self.assertEqual(headers['Content-Type'], 'application/pdf')
+        self.assertEqual(int(headers['Content-Length']), len(self.prepared['pdf']))
+        self.assertEqual(headers['Content-Disposition'],
+            'attachment; filename="Holy-Family-High-School-prospectus.pdf"')
+        self.assertIn('no-store', headers['Cache-Control'])
 
     def test_office_uploads_hidden_reviews_and_publishes_then_withdraws(self):
         self.client.force_login(self.office)

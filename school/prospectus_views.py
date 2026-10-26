@@ -1,11 +1,10 @@
-from io import BytesIO
 import uuid
 
 from django.contrib import messages
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.http import FileResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_safe
@@ -43,8 +42,12 @@ def page_image(request, revision, number):
 @require_safe
 def download(request, revision):
     document = get_object_or_404(Prospectus.objects.only('pdf'), pk=1, revision=revision, published=True, page_count__gt=0)
-    return FileResponse(BytesIO(bytes(document.pdf)), as_attachment=True,
-        filename='Holy-Family-High-School-prospectus.pdf', content_type='application/pdf')
+    # The PDF is already in memory (and bounded to 8 MB). FileResponse would
+    # hand BytesIO to WSGI file wrappers that may require a real file descriptor.
+    response = HttpResponse(bytes(document.pdf), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="Holy-Family-High-School-prospectus.pdf"'
+    response['Content-Length'] = len(response.content)
+    return response
 
 
 @never_cache
