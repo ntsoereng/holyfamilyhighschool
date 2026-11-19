@@ -860,6 +860,33 @@
   .public-site .community-empty p { margin-bottom: 0; }
   .public-site .community-card:focus-within { border-color: #729582; box-shadow: var(--glass-shadow-raised); }
   .public-site .home-announcements { padding-block: 40px; }
+  .public-site .home-announcements .eyebrow { margin-bottom: 10px; font-size: .875rem; color: #876326; }
+  .public-site .noticeboard-intro { margin: 12px 0 0; color: #52685c; font-size: 1rem; }
+  .public-site .home-announcements .section-heading > .text-link { flex-shrink: 0; margin-bottom: 5px; }
+  .public-site .home-notice { position: relative; overflow: hidden; border: 1px solid #d6e1d8; border-top: 3px solid #b99a57; border-radius: 18px; background: #fffefa; box-shadow: 0 6px 20px #10392d08; transition: transform .2s, box-shadow .2s, border-color .2s; }
+  .public-site .home-notice-pinned { border-top-color: #174b3b; }
+  .public-site .home-notice-link { display: flex; flex-direction: column; height: 100%; }
+  .public-site .home-notice-image { width: 100%; height: 190px; object-fit: cover; }
+  .public-site .home-notice-body { display: flex; flex: 1; flex-direction: column; padding: 26px 26px 0; min-height: 300px; }
+  .public-site .home-notice-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+  .public-site .home-notice-date { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 78px; padding: 12px 10px; border: 1px solid #e9dfc9; border-radius: 12px; background: #f5efdf; color: #655026; font-size: .75rem; line-height: 1.2; }
+  .public-site .home-notice-day { font-family: var(--font-serif); font-size: 1.75rem; letter-spacing: -.04em; }
+  .public-site .home-notice-pinned .home-notice-date { background: #174b3b; border-color: #174b3b; color: #fff; }
+  .public-site .home-notice-badge { padding: 5px 9px; border-radius: 6px; background: #edf3ee; color: #174b3b; font-size: .75rem; font-weight: 600; }
+  .public-site .home-notice-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: auto; border: 1px solid #e5eadd; border-radius: 50%; background: #f4f6ee; color: #6d816e; }
+  .public-site .home-notice :is(h2,h3) { margin: 0 0 12px; color: #203e31; font-family: var(--font-sans); font-weight: 700; font-size: 1.1875rem; line-height: 1.5; letter-spacing: -.025em; overflow-wrap: anywhere; }
+  .public-site .home-notice-excerpt { margin-bottom: 26px; font-size: 1rem; line-height: 1.7; color: #596d60; overflow-wrap: anywhere; }
+  .public-site .home-notice-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; margin-top: auto; padding-block: 16px; border-top: 1px solid #e2e8df; color: #174b3b; font-size: .875rem; font-weight: 600; }
+  .public-site .home-notice-open { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #eaf1e9; transition: background-color .2s, color .2s; }
+  .public-site .home-notice-open .icon { width: 16px; height: 16px; }
+  .public-site .home-notice:focus-within { border-color: #638573; box-shadow: 0 12px 28px #10392d14; }
+  .public-site .home-notice-link:focus-visible { outline-offset: -5px; border-radius: 15px; }
+  @media (hover: hover) {
+    .public-site .home-notice:hover { transform: translateY(-4px); border-color: #8ea995; box-shadow: 0 14px 30px #10392d14; }
+    .public-site .home-notice:hover .home-notice-open { color: #fff; background: #174b3b; }
+  }
+  @media (prefers-reduced-motion: reduce) { .public-site .home-notice, .public-site .home-notice-open { transition: none; } .public-site .home-notice:hover { transform: none; } }
+  @media (max-width: 600px) { .public-site .home-notice-body { padding: 22px 22px 0; min-height: 280px; } }
   @media (hover: hover) { .public-site .community-card:hover { border-color: #a8bca8; box-shadow: var(--glass-shadow-raised); } }
   @media (max-width: 1000px) { .public-site .community-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 600px) { .public-site .community-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; } }

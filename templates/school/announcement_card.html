@@ -1,0 +1,19 @@
+{% load email_protection %}
+<article class="home-notice{% if item.pinned %} home-notice-pinned{% endif %}">
+  <a class="home-notice-link" href="{% url 'announcement' item.slug %}{% if list_page > 1 %}?page={{ list_page }}{% endif %}">
+    {% if item.image %}<img class="home-notice-image" src="{{ item.image.url }}" alt="{{ item.image_alt }}" loading="lazy" width="640" height="400">{% endif %}
+    <div class="home-notice-body">
+      <div class="home-notice-meta">
+        <time class="home-notice-date" datetime="{{ item.published_at|date:'c' }}" aria-label="Published {{ item.published_at|date:'j F Y' }}">
+          <span class="home-notice-day">{{ item.published_at|date:'d' }}</span>
+          <span>{{ item.published_at|date:'M Y' }}</span>
+        </time>
+        {% if item.pinned %}<span class="home-notice-badge">Pinned notice</span>{% endif %}
+        <span class="home-notice-icon">{% include 'components/icon.html' with name='document' %}</span>
+      </div>
+      {% if heading_level == 2 %}<h2>{{ item.title }}</h2>{% else %}<h3>{{ item.title }}</h3>{% endif %}
+      <p class="home-notice-excerpt">{{ item.excerpt|protect_email_text }}</p>
+      <span class="home-notice-footer">Read announcement <span class="home-notice-open">{% include 'components/icon.html' with name='chevron' %}</span></span>
+    </div>
+  </a>
+</article>

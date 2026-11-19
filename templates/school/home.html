@@ -14,7 +14,17 @@
     </figure>
   </div>
 </section>
-{% if announcements %}<section class="container section home-announcements" aria-labelledby="announcements-heading"><div class="section-heading"><h2 id="announcements-heading">Announcements</h2><a class="text-link" href="{% url 'announcements' %}">All announcements <span aria-hidden="true">→</span></a></div><div class="community-grid">{% for item in announcements %}{% include 'school/community_card.html' with detail_route='announcement' is_announcement=True %}{% endfor %}</div></section>{% endif %}
+{% if announcements %}
+<section class="container section home-announcements" aria-labelledby="announcements-heading">
+  <div class="section-heading">
+    <div><p class="eyebrow">School noticeboard</p><h2 id="announcements-heading">Announcements</h2><p class="noticeboard-intro">The latest notices for our learners and families.</p></div>
+    <a class="text-link" href="{% url 'announcements' %}">All announcements</a>
+  </div>
+  <div class="community-grid">
+    {% for item in announcements %}{% include 'school/announcement_card.html' %}{% endfor %}
+  </div>
+</section>
+{% endif %}
 <section class="hf-soft-section"><div class="container section"><div class="home-dates"><div class="section-heading"><div><p class="eyebrow">Plan ahead</p><h2>Upcoming dates</h2></div><a class="text-link" href="{% url 'events' %}">Full calendar <span aria-hidden="true">→</span></a></div>{% include 'school/event_list.html' %}</div></div></section>
 {% if projects %}<section class="container section home-projects" aria-labelledby="projects-heading"><div class="section-heading"><h2 id="projects-heading">Projects</h2><a class="text-link" href="{% url 'projects' %}">All projects <span aria-hidden="true">→</span></a></div><div class="community-grid">{% for item in projects %}{% include 'school/community_card.html' with detail_route='project' is_announcement=False %}{% endfor %}</div></section>{% endif %}
 {% if statistics %}<div class="container section statistics-home">{% include 'components/statistics.html' %}</div>{% endif %}
