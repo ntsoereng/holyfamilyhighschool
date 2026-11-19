@@ -97,6 +97,35 @@ class MonthlyCalendarTests(TestCase):
         self.assertNotContains(response, 'Ask about an event')
         self.assertNotContains(response, 'Need to check a date?')
 
+    def test_month_long_events_are_summarised_once_instead_of_repeated_daily(self):
+        long_event = self.event('exam-period', self.local(2026, 9, 29), self.local(2026, 11, 1, 0))
+        assembly = self.event('special-assembly', self.local(2026, 10, 12, 8, 30))
+        response = self.client.get('/events/?year=2026&month=10')
+        self.assertEqual([entry['event'] for entry in response.context['spanning_events']], [long_event])
+        self.assertEqual(response.context['spanning_events'][0]['last_date'], date(2026, 10, 31))
+        self.assertEqual([day['date'] for day in response.context['daily_agenda']], [date(2026, 10, 12)])
+        day = self.cells(response)[date(2026, 10, 12)]
+        self.assertEqual(day['ongoing_count'], 1)
+        self.assertEqual([entry['event'] for entry in day['single_day_entries']], [assembly])
+        html = response.content.decode()
+        grid = html.split('<table class="calendar-grid">')[1].split('</table>')[0]
+        self.assertNotIn('Exam Period', grid)
+        self.assertIn('Special Assembly', grid)
+        self.assertContains(response, 'href="#calendar-spanning-events"')
+        self.assertNotContains(response, '>Continues</span>')
+        ranges = html.split('class="calendar-spanning-list"')[1].split('</ul>')[0]
+        self.assertEqual(ranges.count('Exam Period'), 1)
+        self.assertIn('31 Oct 2026', ranges)
+
+    def test_multi_day_only_dates_link_to_ranges_without_empty_day_anchors(self):
+        self.event('retreat-week', self.local(2026, 10, 12), self.local(2026, 10, 17))
+        response = self.client.get('/events/?year=2026&month=10')
+        self.assertEqual(response.context['daily_agenda'], [])
+        self.assertNotContains(response, 'class="calendar-agenda"')
+        self.assertNotContains(response, 'No additional events this month.')
+        self.assertNotContains(response, 'href="#calendar-day-2026-10-12"')
+        self.assertContains(response, 'id="calendar-spanning-events"')
+
     def test_midnight_end_is_exclusive_and_does_not_add_a_day(self):
         event = self.event('sports-weekend', self.local(2026, 10, 1, 9), self.local(2026, 10, 4, 0))
         previous = self.event('september-event', self.local(2026, 9, 30, 9), self.local(2026, 10, 1, 0))
@@ -116,7 +145,8 @@ class MonthlyCalendarTests(TestCase):
         self.assertIn(event.pk, self.event_ids(cells[date(2026, 10, 1)]))
         self.assertIn(event.pk, self.event_ids(cells[date(2026, 10, 2)]))
         self.assertContains(response, 'datetime="2026-10-01T00:15:00+02:00"')
-        self.assertContains(response, '>00:15</time>')
+        self.assertContains(response, '>1 Oct 2026</time>')
+        self.assertContains(response, '>2 Oct 2026</time>')
 
     def test_instant_events_without_or_with_equal_end_dates_are_retained(self):
         without_end = self.event('morning-assembly', self.local(2026, 10, 1, 0))

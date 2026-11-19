@@ -19,7 +19,19 @@
             {% if next_month %}<a class="calendar-control" href="?year={{ next_month.year }}&amp;month={{ next_month.month }}" aria-label="Next month, {{ next_month|date:'F Y' }}"><span class="calendar-control-label">Next</span><span aria-hidden="true">→</span></a>{% else %}<span class="calendar-control is-disabled" aria-disabled="true" aria-label="Next month"><span class="calendar-control-label">Next</span><span aria-hidden="true">→</span></span>{% endif %}
           </nav>
         </header>
-        <p class="calendar-scroll-hint" id="calendar-scroll-help">{% if has_month_events %}Select a marked date to see its events below.{% else %}Use the arrows to browse months.{% endif %}</p>
+        {% if spanning_events %}
+        <section class="calendar-spanning" id="calendar-spanning-events" aria-labelledby="calendar-spanning-heading">
+          <h3 id="calendar-spanning-heading">Dates to remember</h3>
+          <ul class="calendar-spanning-list">
+            {% for entry in spanning_events %}<li><a class="calendar-range-event" href="{% url 'event' entry.event.slug %}">
+              <span class="calendar-range-icon">{% include 'components/icon.html' with name='calendar' %}</span>
+              <span class="calendar-range-copy"><strong>{{ entry.event.title }}</strong><span class="calendar-range-dates"><time datetime="{{ entry.start_local|date:'c' }}">{{ entry.start_local|date:'j M Y' }}</time> – <time datetime="{{ entry.last_date|date:'Y-m-d' }}">{{ entry.last_date|date:'j M Y' }}</time>{% if entry.event.location %}<span class="calendar-range-location"> · {{ entry.event.location }}</span>{% endif %}</span></span>
+              {% include 'components/icon.html' with name='chevron' %}
+            </a></li>{% endfor %}
+          </ul>
+        </section>
+        {% endif %}
+        <p class="calendar-scroll-hint" id="calendar-scroll-help">{% if has_month_events %}Select a marked date to see what's on.{% else %}Browse other months for more school dates.{% endif %}</p>
         <div class="calendar-scroll" role="region" aria-labelledby="calendar-month-heading" aria-describedby="calendar-scroll-help" tabindex="0">
           <table class="calendar-grid">
             <caption class="sr-only">{{ month_label }} school events, Monday to Sunday</caption>
@@ -28,26 +40,28 @@
               {% for week in calendar_weeks %}<tr>
                 {% for day in week %}<td class="calendar-day{% if not day.is_current_month %} is-outside-month{% endif %}{% if day.is_today %} is-today{% endif %}{% if day.entries and day.is_current_month %} has-events{% endif %}" aria-label="{{ day.date|date:'l, j F Y' }}">
                   <time class="calendar-day-number calendar-date-full" datetime="{{ day.date|date:'Y-m-d' }}"{% if day.is_today %} aria-current="date"{% endif %}>{{ day.date.day }}{% if not day.is_current_month %}<span class="calendar-day-month"> {{ day.date|date:'M' }}</span>{% endif %}</time>
-                  {% if day.entries and day.is_current_month %}<a class="calendar-date-compact" href="#calendar-day-{{ day.date|date:'Y-m-d' }}" aria-label="{{ day.date|date:'j F' }}, {{ day.entries|length }} event{{ day.entries|length|pluralize }}">
+                  {% if day.entries and day.is_current_month %}<a class="calendar-date-compact" href="{% if day.single_day_entries %}#calendar-day-{{ day.date|date:'Y-m-d' }}{% else %}#calendar-spanning-events{% endif %}" aria-label="{{ day.date|date:'j F' }}, {{ day.entries|length }} event{{ day.entries|length|pluralize }}">
                     <time datetime="{{ day.date|date:'Y-m-d' }}"{% if day.is_today %} aria-current="date"{% endif %}>{{ day.date.day }}</time><span class="calendar-event-dot" aria-hidden="true"></span>
                   </a>{% endif %}
-                  <div class="calendar-day-events">{% for entry in day.entries %}{% include 'components/calendar_entry.html' with entry_date=day.date %}{% endfor %}</div>
+                  <div class="calendar-day-events">{% for entry in day.single_day_entries %}{% include 'components/calendar_entry.html' with entry_date=day.date %}{% endfor %}
+                    {% if day.ongoing_count and day.is_current_month %}<a class="calendar-ongoing" href="#calendar-spanning-events" aria-label="{{ day.date|date:'j F' }}: {{ day.ongoing_count }} event{{ day.ongoing_count|pluralize }} running on this date. View dates to remember." title="{{ day.ongoing_count }} event{{ day.ongoing_count|pluralize }} on {{ day.date|date:'j F' }} — view details"><span aria-hidden="true"></span></a>{% endif %}
+                  </div>
                 </td>{% endfor %}
               </tr>{% endfor %}
             </tbody>
           </table>
         </div>
-        {% if not has_month_events %}<p class="calendar-empty" role="status">No published events in {{ month_label }}. Use the month controls to explore other dates.</p>{% endif %}
+        {% if not has_month_events %}<p class="calendar-empty" role="status">No events scheduled for {{ month_label }}. Check back soon for updates.</p>{% endif %}
         {% include 'components/calendar_agenda.html' %}
       </section>
       <aside class="calendar-upcoming" aria-labelledby="calendar-upcoming-heading">
         <details class="calendar-upcoming-panel" data-calendar-upcoming open>
           <summary><h2 id="calendar-upcoming-heading">Next school dates</h2>{% include 'components/icon.html' with name='down' %}</summary>
-          {% include 'school/event_list.html' with events=upcoming_events %}
+          {% include 'school/event_list.html' with events=upcoming_events calendar_list=True %}
         </details>
       </aside>
     </div>
-    <p class="calendar-time-note">School local time. Dates may change; confirm arrangements with the office.</p>
+    <p class="calendar-time-note">All times are Lesotho time. Please contact the school office to confirm a date.</p>
   </div>
 </section>
 {% endtimezone %}

@@ -6,7 +6,7 @@
     <div class="hf-event-copy">
       {% if homepage_today and event.starts_at|date:'Y-m-d' == homepage_today|date:'Y-m-d' %}<span class="community-badge event-today-label">Happening today</span>{% endif %}
       <h3>{{ event.title }}</h3>
-      <p class="hf-event-meta"><span>{% include 'components/icon.html' with name='clock' %}{{ event.starts_at|date:'l, j F Y' }} · {{ event.starts_at|date:'H:i' }}{% if event.ends_at %} – {{ event.ends_at|date:'j M, H:i' }}{% endif %}</span>{% if event.location %}<span>{% include 'components/icon.html' with name='pin' %}{{ event.location }}</span>{% endif %}</p>
+      <p class="hf-event-meta">{% if calendar_list %}<span>{% include 'components/icon.html' with name='calendar' %}{{ event.starts_at|date:'j M Y' }}{% if event.ends_at and event.ends_at|date:'Y-m-d' != event.starts_at|date:'Y-m-d' %} – {{ event.ends_at|date:'j M Y' }}{% endif %}</span><span>{% include 'components/icon.html' with name='clock' %}<time datetime="{{ event.starts_at|date:'c' }}">{{ event.starts_at|date:'H:i' }}</time>{% if event.ends_at %}{% if event.ends_at|date:'Y-m-d' == event.starts_at|date:'Y-m-d' %} – {{ event.ends_at|date:'H:i' }}{% else %} start · {{ event.ends_at|date:'H:i' }} finish{% endif %}{% endif %}</span>{% else %}<span>{% include 'components/icon.html' with name='clock' %}{{ event.starts_at|date:'l, j F Y' }} · {{ event.starts_at|date:'H:i' }}{% if event.ends_at %} – {{ event.ends_at|date:'j M, H:i' }}{% endif %}</span>{% endif %}{% if event.location %}<span>{% include 'components/icon.html' with name='pin' %}{{ event.location }}</span>{% endif %}</p>
     </div>
     <span class="hf-event-link">View details {% include 'components/icon.html' with name='chevron' %}</span>
   </a>

@@ -735,6 +735,22 @@
   .public-site .calendar-time-note { color:#65735d; font-size:.75rem; margin:18px 0 0; }
   .public-site .calendar-agenda-day { scroll-margin-top:95px; }
   .public-site .calendar-entry-location { display:block; font-size:.75rem; color:#617066; margin-top:3px; }
+  .public-site .calendar-spanning { margin: 0 20px 18px; padding: 16px; background: #edf2e9; border: 1px solid #d9e3d3; border-radius: 12px; scroll-margin-top: 110px; }
+  .public-site .calendar-spanning h3 { margin: 0 0 12px; color: #526749; font-size: .875rem; font-weight: 600; }
+  .public-site .calendar-spanning-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .public-site .calendar-range-event { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #dce5d6; border-left: 3px solid #658052; border-radius: 8px; background: #fffefa; }
+  .public-site .calendar-range-event:hover { background: #f8fbf4; border-color: #a4b697; }
+  .public-site .calendar-range-icon { color: #658052; flex-shrink: 0; }
+  .public-site .calendar-range-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .public-site .calendar-range-copy strong { display: block; font-size: .9375rem; line-height: 1.5; color: #174b3b; }
+  .public-site .calendar-range-dates { display: block; margin-top: 3px; font-size: .8125rem; line-height: 1.6; color: #526449; }
+  .public-site .calendar-range-event > .icon { width: 16px; height: 16px; color: #658052; }
+  .public-site .calendar-ongoing { display: inline-flex; justify-self: start; align-items: center; justify-content: center; width: 36px; min-height: 24px; border-radius: 4px; }
+  .public-site .calendar-ongoing > span { display: block; width: 28px; height: 4px; border-radius: 2px; background: #6b8459; }
+  .public-site .calendar-ongoing:hover > span, .public-site .calendar-ongoing:focus-visible > span { background: #174b3b; }
+  .public-site .calendar-day-events .calendar-entry-title { font-size: .75rem; overflow-wrap: anywhere; }
+  .public-site .calendar-day-events .calendar-entry-time { font-size: .75rem; }
+  .public-site .calendar-upcoming .hf-event-meta { font-size: .8125rem; line-height: 1.6; }
   @media(max-width:760px) {
     .public-site.calendar-view .container { padding-inline:16px; }
     .public-site.calendar-view .page-banner { padding-block:20px; }
@@ -744,6 +760,10 @@
     .public-site .calendar-page { padding-block:20px; }
     .public-site .calendar-layout { gap:20px; }
     .public-site .calendar-toolbar { padding:12px; gap:8px; flex-wrap:nowrap; }
+    .public-site .calendar-spanning { margin: 0 12px 14px; padding: 12px; }
+    .public-site .calendar-range-event { padding: 10px; gap: 8px; }
+    .public-site .calendar-range-icon { display: none; }
+    .public-site .calendar-range-location { display: block; }
     .public-site .calendar-month-label { font-size:1.1rem; }
     .public-site .calendar-controls { width:auto; flex-wrap:nowrap; gap:4px; }
     .public-site .calendar-control { min-height:44px; min-width:36px; padding:8px; }

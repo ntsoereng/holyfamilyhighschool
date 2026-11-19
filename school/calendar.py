@@ -56,12 +56,18 @@ def build_calendar_context(params):
 
     entries_by_date = {day: [] for week in weeks for day in week}
     month_events = []
+    spanning_events = []
     for event in displayed_events:
         start = _school_time(event.starts_at, school_timezone)
         end = _school_time(event.ends_at or event.starts_at, school_timezone)
         last_date = _last_event_date(start, end)
         if start.date() <= month_end and last_date >= month_start:
             month_events.append(event)
+            if last_date > start.date():
+                spanning_events.append({
+                    'event': event, 'start_local': start, 'end_local': end,
+                    'last_date': last_date,
+                })
         day = max(start.date(), grid_start)
         last_visible_date = min(last_date, grid_end)
         while day <= last_visible_date:
@@ -73,6 +79,7 @@ def build_calendar_context(params):
                 'is_last_day': day == last_date,
                 'continues_before': day > start.date(),
                 'continues_after': day < last_date,
+                'is_multi_day': last_date > start.date(),
             })
             day += timedelta(days=1)
 
@@ -81,6 +88,8 @@ def build_calendar_context(params):
         'is_current_month': day.month == month and day.year == year,
         'is_today': day == today,
         'entries': entries_by_date[day],
+        'single_day_entries': [entry for entry in entries_by_date[day] if not entry['is_multi_day']],
+        'ongoing_count': sum(entry['is_multi_day'] for entry in entries_by_date[day]),
     } for day in week] for week in weeks]
     month_agenda = [cell for week in calendar_weeks for cell in week
                     if cell['is_current_month'] and cell['entries']]
@@ -105,6 +114,8 @@ def build_calendar_context(params):
             ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         )],
         'month_agenda': month_agenda,
+        'daily_agenda': [cell for cell in month_agenda if cell['single_day_entries']],
+        'spanning_events': spanning_events,
         'has_month_events': bool(month_agenda),
         'upcoming_events': upcoming_events,
     }
