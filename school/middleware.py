@@ -13,7 +13,7 @@ class IndexingHeadersMiddleware:
         match = request.resolver_match
         known_public_route = match and match.url_name in (
             *PRIMARY_PAGES, *PUBLIC_DETAIL_PAGES, 'page', 'sitemap', 'robots-txt')
-        private = request.path.startswith(('/admin/', '/staff/', '/apply/received/', '/tinymce/'))
+        private = request.path.startswith(('/admin/', '/staff/', '/portal/', '/apply/received/', '/tinymce/'))
         if response.status_code >= 400 or private:
             response['X-Robots-Tag'] = 'noindex, nofollow'
         elif request.path.startswith((settings.STATIC_URL, settings.MEDIA_URL)):
@@ -40,6 +40,11 @@ class IndexingHeadersMiddleware:
             if match and match.url_name in {'prospectus-page', 'prospectus-download'}:
                 response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
                 response['Content-Security-Policy'] = "default-src 'none'; sandbox"
+        if request.path.startswith('/portal/'):
+            response['Cache-Control'] = 'no-store, private'
+            response['Referrer-Policy'] = 'same-origin'
+            response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
+            response['X-Content-Type-Options'] = 'nosniff'
         return response
 
 

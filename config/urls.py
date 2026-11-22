@@ -7,6 +7,7 @@ from school import admission_views
 from school import prospectus_views
 from school.sitemaps import sitemap_view, robots_txt
 urlpatterns = [
+    path('portal/', include('academics.urls')),
     path('sitemap.xml', sitemap_view, name='sitemap'), path('robots.txt', robots_txt, name='robots-txt'),
     path('staff/', include('school.staff_urls')), path('admin/', admin.site.urls), path('tinymce/', include('tinymce.urls')),
     path('', views.home, name='home'),

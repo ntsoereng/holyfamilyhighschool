@@ -1,0 +1,811 @@
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 1 / 24
+HOLY FAMILY HIGH SCHOOL
+Report module
+Testing walkthrough
+A practical workbook for school administrators, teachers, students and parents.
+Version 1.0 | 22 November 2026 | 30 scenarios
+Purpose
+Follow the complete reporting cycle, compare actual results with expected results, and record
+strengths, weaknesses and improvement requests. All scenario results start as Not run.
+Testing route Pages
+Prepare roles, records and expected marks 2-5
+Run the step-by-step scenarios T01-T30 6-20
+Assess gaps and record execution results 21-22
+Log findings, decide readiness and reset 23-24
+Tester / team: _________________________ Run date: _________________________
+Test site URL: _________________________ Build / revision: ___________________
+Use fictional records on a test installation. This document creates no accounts, changes no school records and does not
+constitute a completed test report.
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 2 / 24
+PREPARE / 01
+How to run this workbook
+Work through T01-T18 first. These establish a clean baseline. Record screenshots and expected totals
+before T19-T30, which deliberately withdraw reports or alter access. Restore the baseline between
+independent destructive scenarios.
+Role / session Responsibility
+Reporting administrator Creates setup records and accounts; reviews marks, generates, checks fees and
+publishes. Start with an existing authorised administrator.
+Teacher A / Teacher B Each uses a separate teacher account and assigned subject sheets. Administrators
+review sheets; teachers enter the marks.
+Student / parent / other family Use separate accounts and browser profiles or private windows. A student uses the
+family portal role with relationship Student.
+Before starting
+1. Ask the technical owner to identify the test site and confirm a restorable baseline backup.
+2. Use the manual fixture on pages 3-4. Use fresh TEST identifiers for each run; do not reuse real
+admission numbers.
+3. Record the site URL, date, browser/device and build on page 1. Check school contact details on
+held-report pages.
+4. Obtain individual test credentials privately. Do not write passwords in this workbook or screenshots.
+5. Keep report PDFs and screenshots together under the run date. Note the role, class, quarter and report
+revision in each evidence filename.
+Outcome When to use it
+PASS Actual result matches every expected check; keep evidence.
+FAIL A supported feature behaves differently from the expected result.
+BLOCKED You cannot execute because access, data or an external dependency is missing.
+GAP The school needs a workflow the module does not currently provide.
+NOT RUN No test execution or evidence yet. Do not count as a pass.
+Where expected results came from
+Reviewed against the local implementation on 22 November 2026: academics/README.md, models.py, forms.py,
+services.py, reports.py, views.py, urls.py and portal templates. Expected results describe the current build, not a
+guarantee that a deployment has passed testing.
+Optional existing demo: demo.admin, demo.teacher.maths, demo.teacher.languages, demo.parent and demo.student
+may exist on a seeded local copy. Its names, marks and fee states differ from this workbook. Use its actual data for
+exploratory tests; use pages 3-4 for exact arithmetic checks. Demo passwords are generated locally and are not printed
+here.
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 3 / 24
+PREPARE / 02
+Create a small test school
+Use academic year 2026, open reporting periods Q1, Q2 and Q3, and reopening date 12 January 2027
+for Q3. If these periods already exist on the test copy, reuse them without creating duplicates.
+Setup record Values
+Classes TEST Grade 9A and TEST Grade 9B; stream TEST Grade 9 on both; class teacher names Test
+Class Teacher A / B.
+Grading policy Use the supplied 13-band school lookup; pass mark 50; result basis Current quarter
+average; show average enabled; principal name Test Principal.
+Subjects TEST English - code 0175; TEST Mathematics - code 0178; TEST LBSE - code 2030. Include
+English and Mathematics in summary; clear Include in summary for LBSE.
+Students and enrollment
+Admission / student no. Fictional full name Class
+TEST-001 / TS-001 TEST Lerato Mokoena TEST Grade 9A
+TEST-002 / TS-002 TEST Thabo Molefe TEST Grade 9A
+TEST-003 / TS-003 TEST Mpho Mohapi TEST Grade 9B
+TEST-004 / TS-004 TEST Neo Rantso Leave unenrolled until T22
+Accounts and assignments
+Create teacher accounts test.teacher.a and test.teacher.b. Assign Teacher A to English and LBSE,
+Teacher B to Mathematics, in both classes for each of Q1-Q3. This gives 18 subject sheets; enter three
+subject records for each enrolled student each quarter.
+Create family-role accounts test.student.lerato, test.parent and test.other.family. Link the student
+account only to TEST-001 with relationship Student; link test.parent to TEST-001 and TEST-002 as Parent;
+link test.other.family only to TEST-003 as Guardian. Record "Fictional identity verified for scenario
+testing" as the verification note.
+Keep the baseline complete
+Create all required subjects and assignments before generating reports. Finish marks entry in both
+classes before checking stream positions. Do not enroll TEST-004 yet; its later arrival is an
+intentional failure test.
+New-run suffix: __________ Administrator: __________ Fixture verified by: __________
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 4 / 24
+PREPARE / 03
+Marks and calculation answer key
+Enter the following numeric marks. Leave teacher remarks on Automatic from final mark and notes
+blank for the baseline. Each score is a percentage out of 100.
+Student Subject / code Q1 Q2 Q3 Final / grade / remark
+TEST-001 English / 0175 42 76 70 63 / D+ / Good
+TEST-001 Mathematics / 0178 65 84 56 68 / C / Much Better
+TEST-001 LBSE / 2030 * 49 48 73 57 / D / Fair
+TEST-002 English / 0175 80 80 80 80 / B+ / Keep It Up
+TEST-002 Mathematics / 0178 90 90 90 90 / A* / Excellent
+TEST-002 LBSE / 2030 * 10 10 10 10 / H / Work Hard
+TEST-003 English / 0175 60 60 63 61 / D+ / Good
+TEST-003 Mathematics / 0178 60 60 63 61 / D+ / Good
+TEST-003 LBSE / 2030 * 100 100 100 100 / A* / Excellent
+* LBSE stays visible but is excluded from averages, positions and subjects passed. The low and high LBSE marks
+deliberately test that exclusion.
+Q3 summary TEST-001 TEST-002 TEST-003
+Quarter averages Q1 / Q2 / Q3 53.5 / 80.0 / 63.0 85.0 / 85.0 / 85.0 60.0 / 60.0 / 63.0
+Final-mark summary column 63.0 85.0 63.0
+Result / subjects passed PROFICIENT / 2 ADVANCE / 2 PROFICIENT / 2
+Class position 2 out of 2 1 out of 2 1 out of 1
+Stream position 2 out of 3 1 out of 3 2 out of 3
+Why these are the answers
+TEST-001 English: (42 + 76 + 70) / 3 = 62.666..., rounded half up to 63. Mathematics rounds to 68. Its Q3
+average is (70 + 56) / 2 = 63.0. The overall result uses this current-quarter average, not the mean of its
+final marks (65.5). TEST-001 and TEST-003 tie in the stream.
+The final-mark average cell intentionally repeats the configured result average (63.0 here). Check this carefully with staff:
+the column label may need clarification even when the current calculation is correct.
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 5 / 24
+PREPARE / 04
+Navigation and release rules
+Screen / route What to do there
+School portal: /portal/ Teacher sheets or student/family report cards, according to
+role.
+Administration: /portal/office/ Classes, students, subjects, periods, class rosters and teacher
+assignments.
+Accounts & access: /portal/office/accounts/ Create/review accounts; open family links and teacher
+assignments.
+Grading policy: /portal/office/policy/ Lookup evaluations, pass mark, result basis and principal name.
+Reports & fees: /portal/office/reports/ Select class and quarter; review sheets, details, fee status, PDFs
+and publication.
+Audit log: /portal/office/audit/ Read the recorded actions and actors.
+Family release gate: every requirement must hold
+The student and account are active; the family relationship is active and verified; the report is current
+and published; a fee review exists with outstanding amount exactly zero and Cleared explicitly checked.
+Administrator preview bypasses publication and fees, so it cannot prove student access.
+Q3 fee review Cleared? Expected family result after publication
+No fee review No Held; contact office to confirm balance.
+M 250.00 No Held; show outstanding amount and school contact.
+M 0.00 No Held; zero alone does not release the report.
+M 0.00 Yes Available if every other release condition is met.
+M 250.00 Yes attempted Validation error; cannot clear a positive balance.
+Approval and release are separate checks
+There is no separate Approved state or Approve button. The administrator checks submissions and
+previews, then chooses Publish reviewed reports. Fee clearance controls each student's release. The
+same administrator can do all these steps; independent approval is a capability to assess.
+Use Q3 for release tests. Complete Q1-Q2 sheets to supply history; generating Q1-Q2 reports is optional until T20. Do not
+edit an earlier quarter while measuring the page 4 baseline.
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 6 / 24
+SCENARIO WALKTHROUGH
+T01-T02 | Setup and access
+T01 Create accounts and complete first sign-in
+Who / starting point: Administrator, then each new account. Existing reporting administrator available.
+Steps
+1. Open Accounts & access. Create the two teacher and three family-role accounts from page 3 with
+individual temporary passwords.
+2. Sign in as a new teacher and a new family user in separate sessions. Try to go directly to the portal
+before changing the temporary password.
+3. Complete the required password change (at least 12 characters, subject to the password rules). Sign
+out and sign in again.
+Expected: First-use accounts must change passwords before records are accessible. Teacher sees
+assigned sheets; family sees only linked students, or no linked reports yet. Ordinary portal accounts gain
+no website editing or administration rights.
+Observe: Record clarity of account creation, password prompts and role-specific landing pages.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T02 Configure classes, quarters and grading
+Who / starting point: Administrator. Use the fixture on page 3.
+Steps
+1. Create the two TEST classes for 2026 with the same TEST Grade 9 stream; create/reuse Q1-Q3 periods
+and keep them open.
+2. Create the three TEST subjects with the exact codes. Clear Include in summary for TEST LBSE.
+3. In Grading policy verify all 13 bands, pass mark 50 and Current quarter average. Enter the principal
+name; add class teacher names and the Q3 reopening date through Edit report information.
+Expected: Leading zero in 0175/0178 is preserved. Bands include zero and have unique minimums.
+Invalid or incomplete band definitions are rejected. Test configuration is saved; existing custom policy
+may need deliberate adjustment on this test copy.
+Observe: Can a school administrator find the difference between subject grading, pass threshold and overall
+performance?
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 7 / 24
+SCENARIO WALKTHROUGH
+T03-T04 | Students and enrollment
+T03 Add students and reject duplicate identities
+Who / starting point: Administrator. Classes exist.
+Steps
+1. Open Students and create TEST-001 to TEST-004 with admission and separate student numbers as on
+page 3.
+2. Try a second student with admission number TEST-001. Try submitting a new student with no full name
+or no admission number.
+3. Open Edit report information for TEST-001. Confirm the name and student number can be corrected;
+leave original values after checking.
+Expected: Valid records save; duplicate admission number and missing required fields are rejected. The
+admission number is locked in the edit workflow. Student numbers are separate from admission numbers
+and are not a unique identity check.
+Observe: Assess duplicate prevention and whether staff need additional student identifiers or import tools.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T04 Enroll students and protect year boundaries
+Who / starting point: Administrator. T03 complete.
+Steps
+1. Open Class rosters. Enroll TEST-001 and TEST-002 in TEST Grade 9A, and TEST-003 in TEST Grade 9B.
+2. Attempt to enroll TEST-001 again in 9A, then in 9B for the same 2026 year.
+3. Open teacher sheets after assignment setup and confirm the intended students appear. Keep
+TEST-004 unenrolled.
+Expected: One enrollment per student per year: duplicate and same-year second-class enrollment are
+rejected. Creating a student by itself does not place that student on a marks sheet. Next-year enrollment
+is a separate record.
+Observe: Assess roster visibility, error wording and how a same-year transfer request should be handled.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 8 / 24
+SCENARIO WALKTHROUGH
+T05-T06 | Assignments and family links
+T05 Assign every required subject
+Who / starting point: Administrator. Teacher accounts and fixture records exist.
+Steps
+1. Create English/LBSE assignments for Teacher A and Mathematics for Teacher B, for each class and
+each of Q1-Q3.
+2. Try assigning the same class/subject/quarter to a second teacher. If an existing other-year period is
+available, try using it with a 2026 class.
+3. Compare the Reports & fees subject list with the complete three-subject checklist before anyone
+submits marks.
+Expected: Duplicate sheet ownership and mismatched class/period years are rejected. Every subject
+expected on a report must have an assignment. An entirely omitted subject cannot be inferred by the
+system; detecting that omission is a manual review responsibility.
+Observe: Record a GAP if the school requires an automatic curriculum completeness check.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T06 Link students and families correctly
+Who / starting point: Administrator, then each family account. T03-T04 complete.
+Steps
+1. Open Verified family access and create the three sets of links on page 3 with the stated relationships
+and a verification note.
+2. Sign in as test.student.lerato, test.parent and test.other.family in separate sessions.
+3. Confirm the student sees TEST-001 only, the parent sees TEST-001/002, and the other family sees
+TEST-003. Do not enter marks yet if testing an unprepared report card.
+Expected: Only linked students appear; a student account uses the family role with Student relationship.
+Reports remain unavailable before publication/clearance. No public self-registration or
+admission-number-based self-linking is provided.
+Observe: Check whether identity-verification instructions and multi-child navigation are clear.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 9 / 24
+SCENARIO WALKTHROUGH
+T07-T08 | Drafts and validation
+T07 Save a partial marks draft
+Who / starting point: Teacher A. Open Q1 English for TEST Grade 9A.
+Steps
+1. Enter TEST-001 English mark 42 with Mark recorded status. Leave TEST-002 completely unentered and
+choose Save draft.
+2. Leave the page, return to the sheet and confirm 42 is retained and the second row is still blank.
+3. Try Submit & lock marks while TEST-002 remains unentered; then enter 80 and save the draft.
+Expected: Partial drafts save without inventing marks. Blank is distinct from zero. Submission is blocked
+until each roster row has a valid score, absence or exemption. Revision changes after a successful save.
+Observe: Note whether unsaved changes, draft status and validation errors are easy to understand.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T08 Validate zero, decimals and invalid marks
+Who / starting point: Assigned teacher. Use an editable sheet and restore page 4 marks afterward.
+Steps
+1. Try marks -1, 101, 70.123 and nonnumeric text; try a numeric score with Not entered status.
+2. Enter a genuine 0 with Mark recorded status, save, leave and reopen. Repeat with 81.25.
+3. Restore the baseline score from page 4 before submission. If a browser blocks input before save,
+record that behaviour too.
+Expected: Scores accept 0 through 100 and at most two decimal places. Invalid combinations/values do
+not save. Zero and 81.25 persist as numeric marks; no blank row is silently converted into zero.
+Observe: Assess field hints, accessible errors and whether invalid data causes any valid draft work to be lost.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 10 / 24
+SCENARIO WALKTHROUGH
+T09-T10 | Remarks and exceptions
+T09 Use the teacher remarks dropdown
+Who / starting point: Assigned teacher, then administrator. Test on an editable Q3 sheet.
+Steps
+1. Inspect Grading lookup & teacher remarks. Leave Automatic from final mark for the baseline.
+2. In a separate variation select another permitted evaluation, such as Excellent, on a low numeric mark;
+save and generate after completing the sheet.
+3. Check the selected phrase in the report. Add a short test note and check its visibility. Restore
+Automatic and clear the note.
+Expected: Options come from the policy evaluations; Automatic uses the rounded cumulative final mark
+at generation. A permitted manual choice is not forced to match the numeric grade. Subject notes appear
+in family reports/PDFs; they are not private staff notes.
+Observe: Record whether manual overrides need a reason or approval. Never put confidential notes into this field.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T10 Record absence, exemption and missing history
+Who / starting point: Assigned teacher. Run as a variation, then restore baseline marks.
+Steps
+1. On one current-quarter row choose Absent, clear the numeric mark and leave the note empty. Try
+saving; then add "Test absence" and save.
+2. Repeat with Exempt and an explanatory note. Try retaining a numeric mark or grading-lookup remark
+for these statuses.
+3. Generate a complete class report with a current absence/exemption. Separately, on a fresh test copy
+leave an earlier-quarter sheet unsubmitted to inspect missing history.
+Expected: Absence/exemption needs a note and no score or grading-lookup remark. A current
+absence/exemption gets no final grade and is excluded from its numeric summary. Missing historical
+marks show Not recorded; available numeric quarters are used, so missing history does not by itself block
+generation.
+Observe: Confirm staff accept partial-history final marks and understand absence is different from an unentered mark.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 11 / 24
+SCENARIO WALKTHROUGH
+T11-T12 | Submission and review
+T11 Submit complete sheets and lock changes
+Who / starting point: Each assigned teacher. Restore the exact baseline first.
+Steps
+1. Enter all page 4 marks for Q1-Q3 across both classes and all three subjects. Submit each complete
+sheet with Submit & lock marks.
+2. Reopen a submitted sheet in the teacher session and try to change a mark.
+3. As administrator, open the same sheet and verify review is read-only. Do not reopen it yet.
+Expected: All 18 sheets show Submitted for review with submission details. Submitted sheets cannot be
+changed directly by the teacher or administrator. An administrator must return the sheet for correction
+before a teacher can resubmit.
+Observe: Check that the boundary between saving, submitting and correcting a sheet is unmistakable.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T12 Review submissions before generation
+Who / starting point: Administrator. Use a test variation with one Q3 draft, then restore and submit it.
+Steps
+1. In Reports & fees select TEST Grade 9A and Q3. Follow each subject link and compare the roster/marks
+with the fixture.
+2. Attempt Generate / regenerate privately while one assigned subject is still a draft. Confirm no
+complete-looking release is created.
+3. Have the teacher submit the remaining sheet, then generate. Repeat for TEST Grade 9B.
+Expected: Generation is refused until every assigned subject is submitted and the current roster has
+entries. Complete reports generate privately, not published. Review is manual: there is no distinct
+Approved status or recorded second-approver decision.
+Observe: Log a GAP if independent teacher/head/principal approval is required before publication.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 12 / 24
+SCENARIO WALKTHROUGH
+T13-T14 | Report details and calculations
+T13 Capture attendance and report-level remarks
+Who / starting point: Administrator. Q3 reports can be generated.
+Steps
+1. In Reports & fees use Attendance & report remarks for TEST-001. Save blank days absent, inspect the
+preview after regeneration, then save 0 and regenerate again.
+2. Try negative days absent; enter class teacher remark "Apply more effort." and principal remark
+"Capable of better performance."
+3. Confirm class teacher/principal names and reopening date come from class/policy/period settings.
+Save any correction, regenerate and review again.
+Expected: Blank attendance means Not recorded; zero means confirmed no absences. Negative
+attendance is rejected. These remarks are separate from subject dropdowns. Detail edits withdraw the
+affected student report until regenerated; blank remarks/signoff names do not automatically block
+generation.
+Observe: Decide whether the school needs mandatory attendance, signoff fields or a dedicated class-teacher entry role.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T14 Verify totals, grades and stream positions
+Who / starting point: Administrator. Baseline marks restored and submitted in both classes.
+Steps
+1. Generate Q3 reports for both classes, then compare every value with the page 4 answer key.
+2. Check TEST-001 final marks 63/68/57, result average 63.0, two passes and LBSE exclusion. Compare
+the two tied stream positions.
+3. In a separate variation reopen a peer class sheet; regenerate the other class and inspect stream
+position. Restore, resubmit and regenerate both classes.
+Expected: The baseline matches the answer key exactly. Ties share position. With incomplete peer
+submissions the stream position is unavailable rather than guessed; an unset stream also gives no
+stream position. A student without any numeric summary prevents a complete population rank.
+Observe: Record any disagreement about rounding, tie rules, pass thresholds or which average determines the result.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 13 / 24
+SCENARIO WALKTHROUGH
+T15-T16 | PDFs and fee checks
+T15 Inspect the HTML and PDF report
+Who / starting point: Administrator. Current Q3 reports generated privately.
+Steps
+1. Open Preview report and Preview PDF for each student. Compare codes, quarter columns, final marks,
+evaluations, teacher names and all summary values.
+2. Check performance descriptions, remarks/signoff names, attendance, reopening date, footer,
+reference and revision. Before publication the date must say Awaiting publication.
+3. Download and open the PDF in a second reader; print or preview at A4 size. Keep a baseline copy for
+later corrections.
+Expected: HTML and PDF agree. Text is legible, names and codes are intact, and no row/text is clipped.
+Reports are private and generation alone does not grant family access. School logos/contacts and the
+displayed publication state are accurate.
+Observe: Note layout strengths, ambiguous labels, excessive pages and any difference between screen and printed
+output.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T16 Test every fee-clearance state
+Who / starting point: Administrator and linked family. Q3 preview reviewed; publish 9A for this fee-gate test.
+Steps
+1. After reviewing the PDF, publish TEST Grade 9A Q3. Use Review fees to check no review, positive M
+250.00 without clearance, zero without clearance, and zero with Cleared checked. Enter a test review
+note for each save.
+2. Attempt positive outstanding amount with Cleared checked, a negative amount, and saving without
+the required review note.
+3. Use the linked family session after each state, with both the report page and download URL. Compare
+the release matrix on page 5.
+Expected: Only an explicit zero-balance clearance satisfies the fee gate. Invalid amounts/clearance
+combinations or missing review notes are rejected. Held responses expose no marks or private
+payment-reference notes. This records the balance preventing release; it is not a payment transaction
+ledger.
+Observe: Assess whether fees language, LSL/M amounts and office contact instructions are understandable.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 14 / 24
+SCENARIO WALKTHROUGH
+T17-T18 | Release and isolation
+T17 Publish reviewed reports; student opens one
+Who / starting point: Administrator, then student. Current Q3 reports previewed; TEST-001 has zero cleared fees.
+Steps
+1. In Reports & fees choose the class/quarter and Publish reviewed reports. Repeat for the second class
+once reviewed.
+2. Sign in as test.student.lerato at /portal/. Choose View report, then Download PDF. Repeat as
+test.parent for the same student.
+3. Inspect the publication date in both formats. Compare all marks with the administrator preview and
+check the downloaded file opens.
+Expected: The linked, active and cleared student sees the published current report and can download its
+PDF. The actual publication time appears in HTML and PDF. Publication is class/quarter-wide; each
+student release still depends on that student's fee clearance.
+Observe: Measure how easily a student can find the correct year, quarter and download action.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T18 Try another student's report and office pages
+Who / starting point: Student, other family and teacher. Save test report/download URLs from the administrator
+session.
+Steps
+1. As test.other.family, paste TEST-001 report and download URLs. As test.student.lerato, paste TEST-003
+URLs.
+2. As a teacher, paste a family report URL and another teacher's marks-sheet URL.
+3. As student/family/teacher, try /portal/office/, /portal/office/accounts/ and /portal/office/policy/. Sign out
+and retry a private report URL.
+Expected: Unauthorised records are denied or not found without exposing marks; office administration is
+inaccessible to ordinary portal roles. Signed-out users must authenticate. Do not accept hidden
+navigation links as proof: direct URLs must also be blocked.
+Observe: Treat cross-student disclosure, unauthorised editing or downloadable private PDFs as Critical findings.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 15 / 24
+SCENARIO WALKTHROUGH
+T19-T20 | Withdrawals and corrections
+T19 Withdraw reports and restore a fee hold
+Who / starting point: Administrator and student. Begin with a released report; keep its old URLs and downloaded copy.
+Steps
+1. Choose Withdraw reports for Q3. Refresh the student portal and open the saved report/download URLs.
+2. Republish the current class after review. Change TEST-001 fees to M 1.00, not cleared, with a note;
+retry the old URLs.
+3. Restore zero with explicit clearance and verify access returns if publication/currentness still hold.
+Expected: Withdrawal and new debt block further family report/PDF access immediately on a fresh
+request. Restored clearance restores access when all gates pass. A PDF already downloaded or an
+already-rendered screen cannot be remotely erased; test fresh requests separately.
+Observe: Assess whether messages distinguish publication withdrawal from fee holds without leaking academic content.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T20 Correct an earlier quarter after release
+Who / starting point: Administrator and assigned teacher. Keep baseline PDFs; Q3 released in both classes.
+Steps
+1. Open TEST Grade 9A Q1 English as administrator. Give a reason and Reopen marks sheet. If Q1 was
+closed, open the period too.
+2. Confirm dependent Q3 reports for 9A and affected TEST Grade 9 stream peers are withdrawn. Teacher
+changes TEST-001 Q1 English from 42 to 45, then resubmits.
+3. Regenerate and review Q3 for both classes, then republish. Restore 42 and repeat the correction
+process to return to baseline.
+Expected: Later cumulative reports and affected stream peers cannot remain available with stale
+values. With 45, TEST-001 English final becomes 64; its Q3 result stays 63.0 and two passes.
+Regeneration increments report revision and withdraws publication until reviewed/released again.
+Observe: Check whether the breadth of invalidation is clear and whether staff can track all reports needing regeneration.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 16 / 24
+SCENARIO WALKTHROUGH
+T21-T22 | Periods and late enrollment
+T21 Close a quarter and reopen for correction
+Who / starting point: Administrator, then teacher. Prepare a draft Q3 sheet in a separate test class/stream; keep
+baseline reports published.
+Steps
+1. Open Reporting periods, choose Q3 and Open or close period. Enter a reason and Close marks entry.
+2. Try saving/submitting a draft teacher sheet. Check an unchanged published current report remains
+accessible when otherwise released.
+3. Open marks entry with a reason. Confirm submitted sheets stay locked until a separate Reopen marks
+sheet action. Restore and complete any draft variation.
+Expected: Closed periods block teacher saves/submissions. Closing does not withdraw existing reports.
+Reopening a period does not itself reopen submitted sheets; both period and sheet must allow editing for
+a correction.
+Observe: Evaluate whether staff understand the two locks and can find each control.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T22 Add a late student after reports exist
+Who / starting point: Administrator and assigned teachers. Baseline evidence saved; TEST-004 still unenrolled.
+Steps
+1. Enroll TEST-004 into TEST Grade 9A for 2026 using Class rosters.
+2. Inspect all 9A subject sheets, affected stream reports and existing family access. Attempt generating
+Q3 before entering the new student's marks.
+3. Enter valid rows for the new student in relevant sheets and have teachers resubmit. Decide how to
+record genuine missing history, then regenerate/review/republish both classes as needed.
+Expected: Adding an enrollment reopens all sheets for that class, retains existing marks and withdraws
+affected reports/stream positions. The late student appears on every class sheet; incomplete
+current-quarter rows block generation. Adding only a Student record does not change the roster.
+Observe: Measure the work required for late enrollment and whether bulk assistance is needed. Rankings now use the
+changed population.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 17 / 24
+SCENARIO WALKTHROUGH
+T23-T24 | Removal and transfer
+boundaries
+T23 Remove a student from family availability
+Who / starting point: Administrator and the linked family. Use TEST-002 after saving baseline evidence.
+Steps
+1. Open Students > TEST-002 > Edit report information. Clear Active and save.
+2. As test.parent refresh the portal and try a saved TEST-002 report/PDF URL. As teacher inspect the class
+roster; as administrator inspect historical records.
+3. Re-enable Active when finished. Regenerate affected reports and republish after review; restore
+clearance/link state if changed elsewhere.
+Expected: An inactive student is hidden/blocked from family access, while marks, enrollments and
+history remain. Inactivation does not remove the student from marks sheets or automatically exclude
+them from ranking/population counts. Metadata edits withdraw affected reports.
+Observe: This is deactivation, not deletion or roster removal. Record a GAP if a leaver should disappear from current
+assessment populations.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T24 Assess transfer and permanent-deletion needs
+Who / starting point: Administrator. Read-only boundary test; no direct database edits.
+Steps
+1. Look for a supported action to remove an existing enrollment, transfer a student between classes in
+the same year or delete their academic history.
+2. Check the disabled identity fields in existing class/subject/student edits. Try the same-year second
+enrollment only on the test fixture, as in T04.
+3. Write down the school's intended transfer/leaver process, the records to retain and who should
+authorise it. Send the requirement to the technical owner rather than modifying data outside the
+workflow.
+Expected: The portal has no self-service enrollment deletion or same-year transfer workflow; identity
+relationships are deliberately restricted and history uses protected links. A blocked second enrollment is
+expected. Required transfers need a reviewed technical correction/migration.
+Observe: Classify the missing workflow as a GAP, separate from a malfunction in supported deactivation.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 18 / 24
+SCENARIO WALKTHROUGH
+T25-T26 | Account and teacher changes
+T25 Revoke family access and deactivate an account
+Who / starting point: Administrator and family. Keep an already-signed-in test family session.
+Steps
+1. In Verified family access open a link, give a reason and Revoke access. Test both old report URLs and
+portal cards; restore the verified link afterward.
+2. In Accounts & access open that ordinary family account, enter a reason and Deactivate account. Try
+the existing session and a new login.
+3. Attempt reactivation before a password reset. Then verify the test recipient, set a temporary
+password, reactivate and complete the required first-use password change.
+Expected: Link revocation blocks that relationship; other valid links are unaffected. Deactivation
+invalidates sessions and removes the usable password. Reactivation requires a reset first. Old sessions
+must not regain access after later reactivation.
+Observe: Evaluate whether the office can distinguish student inactivity, link revocation and account deactivation.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T26 Reassign a teacher without losing a subject
+Who / starting point: Administrator, outgoing and replacement teachers. Use a copied or reset sheet variation.
+Steps
+1. Open a marks sheet and Review teacher access. Reassign it to another active teacher account and
+save with a reason.
+2. Try the old teacher's direct sheet URL; open it as the replacement teacher. On a submitted sheet,
+confirm a separate reopening is needed for corrections.
+3. Disable teacher access and inspect Reports & fees. Restore the correct assignment/access, then
+complete or resubmit before regeneration.
+Expected: Only the current active assigned teacher can edit an open draft. Reassignment preserves
+marks and withdraws affected reports. Revoking access alone does not remove the subject or discard
+submitted marks; an unsubmitted revoked sheet still blocks generation until reassigned/completed.
+Observe: Check whether responsibilities remain visible when a teacher leaves and whether staff can distinguish revoke
+from remove-subject.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 19 / 24
+SCENARIO WALKTHROUGH
+T27-T28 | Stale edits and audit
+T27 Test stale pages and competing saves
+Who / starting point: Two sessions for the same authorised role. Use disposable test variations; note both starting
+revisions.
+Steps
+1. Open one editable marks sheet in two tabs. Save 70 in tab A, then try saving 90 from the stale tab B.
+2. Repeat with two copies of a fee review, grading policy or Edit report information form. Save A first,
+then stale B.
+3. Open a Reports & fees preview in A; regenerate in B; try publishing from the old preview in A. Reload
+and review before retrying.
+Expected: The stale write/publication is rejected and the first saved values survive; the user is told to
+reload/review. Expired report preview tokens also require reload. Browser tab tests check stale forms;
+simultaneous transaction locking still needs a technical MySQL/MariaDB test.
+Observe: Record field preservation, error wording and how easily a user can recover without overwriting another person's
+work.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T28 Review audit evidence and private information
+Who / starting point: Administrator and family. Execute after lifecycle/access scenarios.
+Steps
+1. Open Audit log and locate recent setup edits, marks saves/submissions, report generations/revisions,
+fee reviews, publication/withdrawal and downloads.
+2. Compare actor, time and target with your test evidence. Confirm family-link and account reviews show
+the relevant actions.
+3. As family inspect a held report response and any downloaded report. Confirm private fee review notes
+and account credentials are not exposed; subject notes are intentionally report-visible.
+Expected: Relevant actions are attributable in the administrator-only audit log. No portal editing of audit
+entries is offered. Financial review notes remain private. The log is an action history; it does not provide a
+full prior-marks version browser or recover superseded report PDFs.
+Observe: Assess whether the evidence is sufficient for resolving disputes, not just whether an audit row exists.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 20 / 24
+SCENARIO WALKTHROUGH
+T29-T30 | Usability, capacity and recovery
+T29 Check usability and report readability
+Who / starting point: Administrator, teacher and family on desktop plus a phone-sized viewport. Use test records only.
+Steps
+1. Navigate using the keyboard; check labels, focus visibility, errors, save/submit buttons and whether
+tables can be scrolled on a small screen.
+2. Enter a long fictional student name and remarks; include a Sesotho name with punctuation. Generate
+and download the report, including Q4 on a separate fixture if needed.
+3. Open/print the PDF at A4 and compare HTML. Record task time and any unclear wording, crowded
+columns, broken characters, clipped text or missing repeated table headings.
+Expected: Core tasks remain usable; validation is understandable; names, leading-zero codes and all
+quarter columns survive. Longer reports may use additional pages but must not lose or overlap content.
+Restore the baseline values after the variation.
+Observe: Capture successful examples as strengths as well as usability problems. Do not assume a short report proves
+long-report quality.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+T30 Check capacity, recovery and repeatability
+Who / starting point: Technical owner with administrator; use a dedicated test copy.
+Steps
+1. Time loading, saving and generating for the 2-student baseline. On a separate prepared class, repeat
+near the supported 200-student limit and record timings/errors.
+2. Try adding a 201st enrollment only to that dedicated class. Ask the technical owner to test
+simultaneous writes and generation failure rollback on MySQL/MariaDB.
+3. Have the technical owner demonstrate a backup restore into a separate test database, then repeat a
+small report release. Keep application data untouched during restore.
+Expected: Portal enrollment enforces the 200-student class limit. Realistic sheets and PDFs finish
+without lost marks or partial visible releases. Concurrent writes, all-or-nothing generation and
+recoverability require technical evidence, not just UI confidence. No fixed speed target is built into this
+workbook.
+Observe: Agree response-time targets before testing; record technical checks as BLOCKED if the
+environment/permissions are unavailable.
+Result: PASS / FAIL / BLOCKED / GAP / NOT RUN Date / initials: ______________
+Evidence / issue reference / actual difference:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 21 / 24
+EVALUATE / 01
+Separate strengths from gaps
+Use these implementation observations as prompts. They are not passed test results. Confirm the
+capability in your run, then record whether it fits school practice.
+Candidate strength to verify Evidence scenarios
+Teachers save drafts, submit and lose edit access until a reasoned reopening. T07, T11, T20-T21
+Reports require current marks, publication, verified access and explicit zero-fee clearance. T12, T16-T19
+Lookup remarks, configurable subject exclusions and reproducible quarter calculations. T09, T14-T15
+Earlier-quarter changes withdraw dependent reports; stale forms reject overwrites. T20, T22, T27
+Actions and releases are attributable; history is retained rather than cascaded away. T23-T24, T28
+Current boundaries to assess
+Current boundary School decision / improvement question
+No separate approval state or independent approver
+role.
+Should teacher/head/principal signoff be mandatory before
+release?
+Inactive students remain enrolled and in marks/ranking
+populations. No portal transfer/deletion.
+How should leavers, transfers and corrected enrollment
+mistakes be handled?
+Assignments define the required-subject list; omissions
+are not inferred.
+Do you need a grade curriculum template and automatic
+completeness check?
+Missing history and blank attendance/signoff details can
+still yield reports.
+Which fields/quarters must be mandatory before
+generation/publication?
+A selected evaluation may disagree with the grade;
+notes are family-visible.
+Should overrides require a reason? Is a separate private staff
+note needed?
+Fee clearance is a reviewed balance; no payment ledger
+or installment workflow.
+Is linkage to the school's accounts process needed?
+Regeneration replaces the current PDF; no historical
+revision viewer.
+Are retained report versions, diffs or stronger approval
+evidence required?
+Record a FAIL when supported behaviour breaks. Record a GAP when the supported behaviour works but is insufficient for
+school needs. If both occur, log them separately.
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 22 / 24
+RECORD / 01
+Execution register
+Replace Not run as you execute. Use the page 2 status definitions. Fill one row per scenario; repeat this page for another
+browser, role configuration or build.
+ID Scenario Status Issue / evidence ref.
+T01 Create accounts and complete first sign-in Not run
+T02 Configure classes, quarters and grading Not run
+T03 Add students and reject duplicate identities Not run
+T04 Enroll students and protect year boundaries Not run
+T05 Assign every required subject Not run
+T06 Link students and families correctly Not run
+T07 Save a partial marks draft Not run
+T08 Validate zero, decimals and invalid marks Not run
+T09 Use the teacher remarks dropdown Not run
+T10 Record absence, exemption and missing history Not run
+T11 Submit complete sheets and lock changes Not run
+T12 Review submissions before generation Not run
+T13 Capture attendance and report-level remarks Not run
+T14 Verify totals, grades and stream positions Not run
+T15 Inspect the HTML and PDF report Not run
+T16 Test every fee-clearance state Not run
+T17 Publish reviewed reports; student opens one Not run
+T18 Try another student's report and office pages Not run
+T19 Withdraw reports and restore a fee hold Not run
+T20 Correct an earlier quarter after release Not run
+T21 Close a quarter and reopen for correction Not run
+T22 Add a late student after reports exist Not run
+T23 Remove a student from family availability Not run
+T24 Assess transfer and permanent-deletion needs Not run
+T25 Revoke family access and deactivate an account Not run
+T26 Reassign a teacher without losing a subject Not run
+T27 Test stale pages and competing saves Not run
+T28 Review audit evidence and private information Not run
+T29 Check usability and report readability Not run
+T30 Check capacity, recovery and repeatability Not run
+Run ID: ___________________ Tester: ___________________ Build: ___________________
+PASS: ____ FAIL: ____ BLOCKED: ____ GAP: ____ NOT RUN: ____ Total: 30
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 23 / 24
+RECORD / 02
+Finding and evidence worksheet
+Copy this page for each significant defect, weakness, strength or improvement request. Use fictional IDs
+in shared screenshots and never include passwords.
+Finding ID ____________ Scenario / run ____________
+Type Defect / Gap / Strength Severity / priority ____________
+Tester / date ____________ Owner / target date ____________
+Severity guide
+Critical: another student's data exposed, unauthorised edits or unrecoverable data loss.
+High: wrong marks/results/recipient, blocked core release or stale reports still accessible.
+Medium: recoverable workflow error or misleading status with a workable alternative.
+Low: cosmetic, wording or minor convenience issue. For strengths and feature gaps, mark severity N/A and set an
+improvement priority instead.
+Short title and why it matters:
+Preconditions: role, class, quarter, student test ID, browser/device and report revision:
+Exact steps to reproduce (include both sessions if relevant):
+Expected result versus actual result:
+Evidence file / screenshot / PDF reference and audit time:
+Workaround, recommended improvement and retest result:
+
+HOLY FAMILY HIGH SCHOOL REPORT MODULE / SCENARIO TESTING
+Version 1.0 | 22 November 2026 | Test results: record during execution 24 / 24
+REVIEW / 01
+Decide readiness and plan improvements
+Area Score 1-5 / N.T. Evidence / principal concern
+Student setup and roster changes
+Teacher marks and error recovery
+Review, calculations and report layout
+Fees, publication and student access
+Privacy and access revocation
+Usability, performance and recoverability
+Scoring: 1 = unusable, 2 = major difficulty, 3 = workable with issues, 4 = good, 5 = reliable and easy; N.T. = not tested.
+Scores summarise observations and do not override a failed privacy or correctness check.
+Three strongest points, with scenario/evidence references:
+Three highest-priority weaknesses or gaps, with an owner and next action:
+Readiness decision
+Ready for limited pilot / Ready with agreed conditions / Not ready / Incomplete testing
+Before a pilot, require correct answer-key calculations, working release/access checks, no unresolved
+Critical findings and an explicit decision on every High finding and essential workflow gap. Mark
+unfinished technical checks as BLOCKED rather than silently passing them.
+Decision, agreed conditions, reviewer and date:
+Reset and retest
+1. Keep the execution register, finding sheets, screenshots and PDFs under the run ID.
+2. Restore the test baseline between destructive runs, or use a new TEST prefix. The portal does not
+supply a complete test-data purge; have the technical owner reset an isolated copy.
+3. Revoke test access when no longer needed. Keep test data out of the production school records.
+4. Retest each fix, then repeat T14 and T16-T20 to check calculations, release, isolation, withdrawal and
+corrections.
+This workbook was prepared for scenario testing only. No test case is certified as passed until your team executes it and
+records evidence.
